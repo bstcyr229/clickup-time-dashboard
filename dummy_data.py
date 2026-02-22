@@ -2,25 +2,34 @@ import pandas as pd
 import random
 
 def generate_dummy_data():
-    team = ["Joe", "Sofia", "Marcus", "Leila"]
+    staff = ["Joe", "Sofia", "Marcus", "Leila" , "Khalid" , "Eva" , "Pierre"]
     projects = ["Website Redesign", "CRM Migration", "Onboarding Revamp", "Q2 Reporting"]
     tasks = [
         "Kickoff call", "Scope doc", "Design review", "Dev sprint",
         "QA testing", "Stakeholder update", "Final delivery", "Retrospective"
     ]
-
+    teams = {
+        "Joe" : "Team One", "Sofia" : "Team Two" , "Marcus" : "Team Three", "Leila": "Team One" , "Khalid" : "Team Two" , "Eva" : "Team Three", "Pierre"
+    : "Team One"}
     rows = []
 
     for _ in range(60):
         estimated = round(random.uniform(1,12),1)
         actual = round(estimated * random.uniform(0.5, 2.0),1)
+        selected_assignee = random.choice(staff)
+        team_register = teams[selected_assignee]
+        print(team_register)
+
+        print(team_register)
         rows.append({
-            "assignee": random.choice(team),
+            "assignee": random.choice(staff),
             "project":random.choice(projects),
             "task":random.choice(tasks),
             "estimated_hours":estimated,
             "actual_hours":actual,
-            "variance": round(actual - estimated,1)
+            "variance": round(actual - estimated,1),
+            "team": team_register
+
 
         })
 
