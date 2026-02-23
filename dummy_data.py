@@ -18,9 +18,7 @@ def generate_dummy_data():
         actual = round(estimated * random.uniform(0.5, 2.0),1)
         selected_assignee = random.choice(staff)
         team_register = teams[selected_assignee]
-        print(team_register)
 
-        print(team_register)
         rows.append({
             "assignee": random.choice(staff),
             "project":random.choice(projects),
@@ -37,5 +35,5 @@ def generate_dummy_data():
     
 if __name__ == "__main__":
     df= generate_dummy_data()
-    print(df.head(10))
-    print(f"\n{len(df)} tasks generated")
+    #print(df.head(10))
+    #print(f"\n{len(df)} tasks generated")
