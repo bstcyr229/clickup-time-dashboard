@@ -13,6 +13,7 @@ def generate_dummy_data():
     : "Team One"}
     rows = []
 
+
     for _ in range(60):
         estimated = round(random.uniform(1,12),1)
         actual = round(estimated * random.uniform(0.5, 2.0),1)
@@ -26,7 +27,7 @@ def generate_dummy_data():
             "estimated_hours":estimated,
             "actual_hours":actual,
             "variance": round(actual - estimated,1),
-            "team": team_register, 
+            "Team": team_register, 
             
 
         })
