@@ -18,10 +18,15 @@ project = dummy_data_keys["project"].unique().tolist()
 actual_hours = dummy_data_keys["actual_hours"]
 variance = dummy_data_keys["variance"]
 team = dummy_data_keys["team"].unique()
+team_register = dummy_data_keys["team"]
+
 
 def view_one():
     team_members = dummy_data_keys.groupby("team")["assignee"].nunique()
     team_hours_worked = dummy_data_keys.groupby("team")["actual_hours"].sum()
-    
+    total_hours = team_members * 40
+    over_capacity = total_hours > team_hours_worked
+    print("Team Capacity")
+    return over_capacity
 
 print(view_one())

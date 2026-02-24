@@ -20,20 +20,21 @@ def generate_dummy_data():
         team_register = teams[selected_assignee]
 
         rows.append({
-            "assignee": random.choice(staff),
+            "assignee": selected_assignee,
             "project":random.choice(projects),
             "task":random.choice(tasks),
             "estimated_hours":estimated,
             "actual_hours":actual,
             "variance": round(actual - estimated,1),
-            "team": team_register
-
+            "team": team_register, 
+            
 
         })
 
+    
     return pd.DataFrame(rows)
     
 if __name__ == "__main__":
     df= generate_dummy_data()
-    #print(df.head(10))
-    #print(f"\n{len(df)} tasks generated")
+    print(df.head(10))
+    print(f"\n{len(df)} tasks generated")
