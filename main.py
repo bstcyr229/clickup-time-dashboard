@@ -1,8 +1,3 @@
-#View One, show hours by team: Key: Team {Name here} Values: Assignees, total hours worked
-    #Gather the assignees and hours worked key pairs 
-    #Reduce to unique values for asignees 
-    #Sum the hours for each assignee
-    #Print the view  
 #View Two, shows hours worked by assignee vs hours estimated : Key Assignee: total hours worked, total hours estimated
 #View Three, shows a task and all data points for it and only it, Key: Task Values: Assignee project actual hours and variance
 
@@ -25,7 +20,7 @@ team_register_two = dummy_data_keys.groupby("Team")["assignee"].unique()
 
 
 def view_one():
-    team_members = dummy_data_keys.groupby("Team")["assignee"].nunique()
+    team_members = dummy_data_keys.groupby("Team")["assignee"].unique()
     team_estimated_hours_worked = dummy_data_keys.groupby("Team")["estimated_hours"].sum()
     team_actual_hours_worked = dummy_data_keys.groupby("Team")["actual_hours"].sum()
     difference_in_hours = team_actual_hours_worked - team_estimated_hours_worked
@@ -34,6 +29,10 @@ def view_one():
     over_capacity_percentage = round(((team_actual_hours_worked / total_hours ) * 100) - 100 )
     hours_by_team = pd.DataFrame({"Team Members":team_register_two, "Team Capacity": total_hours , "Estimated Hours Worked": team_estimated_hours_worked, "Actual Hours Worked": team_actual_hours_worked, "Difference": difference_in_hours, "Overcapacity":over_capacity, "Over Capacity Percentage" : over_capacity_percentage})
     print(hours_by_team)
-    
 
-print(view_one())
+def view_two():
+    team_members_by_assignee =dummy_data_keys.groupby("assignee")["staff"].nunique()
+    assignee_estimated_hours_worked = dummy_data_keys.groupby("assignee")["estimated_hours"].sum()
+    data_by_assignee = pd.DataFrame({"Team Members": team_members_by_assignee, "Estimated Hours": assignee_estimated_hours_worked})
+    print(data_by_assignee)
+view_two()
