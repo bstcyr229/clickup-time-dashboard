@@ -31,7 +31,7 @@ def view_one():
     print(hours_by_team)
 
 def view_two():
-    team_members_by_assignee =dummy_data_keys.groupby("assignee")["staff"].nunique()
+    team_members_by_assignee = dummy_data_keys["assignee"].nunique()
     assignee_estimated_hours_worked = dummy_data_keys.groupby("assignee")["estimated_hours"].sum()
     data_by_assignee = pd.DataFrame({"Team Members": team_members_by_assignee, "Estimated Hours": assignee_estimated_hours_worked})
     print(data_by_assignee)
