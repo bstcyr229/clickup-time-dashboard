@@ -12,6 +12,16 @@ def generate_dummy_data():
     teams = {
         "Joe" : "Team One", "Sofia" : "Team Two" , "Marcus" : "Team Three", "Leila": "Team One" , "Khalid" : "Team Two" , "Eva" : "Team Three", "Pierre"
     : "Team One"}
+
+    rates = {
+    "Joe": 85,
+    "Sofia": 95,
+    "Marcus": 90,
+    "Leila": 80,
+    "Khalid": 100,
+    "Eva": 110,
+    "Pierre": 75
+}
     rows = []
     print(type(tasks))
 
@@ -32,6 +42,9 @@ def generate_dummy_data():
             "actual_hours":actual,
             "variance": round(actual - estimated,1),
             "Team": team_register, 
+            "hourly_rate": rates[selected_assignee],
+            "total_cost": round(actual * rates[selected_assignee],2)
+
             
 
         })
