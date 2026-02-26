@@ -41,4 +41,3 @@ def view_two():
     assignee_tasks_worked = dummy_data_keys.groupby("assignee")["task"].agg(list)
     data_by_assignee = pd.DataFrame({"Tasks": assignee_tasks_worked, "Estimated Hours": assignee_estimated_hours_worked, "Actual Hours Worked": assignee_actual_hours_worked, "Overcapacity": capacity_check})
     print(data_by_assignee)
-view_two()
