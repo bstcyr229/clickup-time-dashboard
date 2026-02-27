@@ -24,6 +24,8 @@ hourly_rate = dummy_data_keys.groupby("assignee")["hourly_rate"]
 
 
 
+
+
 def view_one():
     team_members = dummy_data_keys.groupby("Team")["assignee"].unique()
     team_members_number = team_members.apply(len)
@@ -33,10 +35,18 @@ def view_one():
     total_hours = team_members_number * 40
     over_capacity = total_hours < team_actual_hours_worked
     over_capacity_percentage = round(((team_actual_hours_worked / total_hours ) * 100) - 100 )
+    team_register_hours = dummy_data_keys.groupby("Team")["actual_hours"].sum()
     hours_by_team = pd.DataFrame({"Team Members":team_register_two, "Team Capacity": total_hours , "Estimated Hours Worked": team_estimated_hours_worked, "Actual Hours Worked": team_actual_hours_worked, "Difference": difference_in_hours, "Overcapacity":over_capacity, "Over Capacity Percentage" : over_capacity_percentage})
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric(label="Team One Over Capacity Percentage", value=f"{over_capacity_percentage['Team One']}%")
+    with col2:
+        st.metric(label="Team Two Over Capacity Percentage", value=f"{over_capacity_percentage['Team Two']}%")
+    with col3:
+        st.metric(label="Team Three Over Capacity Percentage", value=f"{over_capacity_percentage['Team Three']}%")
     st.title("Team View")
-    print(hours_by_team)
     st.dataframe(data=hours_by_team)
+    
 def view_two():
     assignee_estimated_hours_worked = dummy_data_keys.groupby("assignee")["estimated_hours"].sum()
     assignee_actual_hours_worked = dummy_data_keys.groupby("assignee")["actual_hours"].sum()
@@ -46,6 +56,8 @@ def view_two():
     data_by_assignee = pd.DataFrame({"Tasks": assignee_tasks_worked, "Estimated Hours": assignee_estimated_hours_worked, "Actual Hours Worked": assignee_actual_hours_worked, "Overcapacity": capacity_check})
     st.title("View by Employee")
     st.dataframe(data_by_assignee)
+    
+
 
 def view_three():
     project_for_view_three = dummy_data_keys["project"]
@@ -58,7 +70,21 @@ def view_three():
     table_for_view_three = pd.DataFrame({"Project":project_for_view_three, "Tasks": tasks_for_view_three, "Task Id": task_ids_for_view_three, "Assignee":task_assignee, "Estimated Hours": task_estimated_hours, "Actual Hours":task_actual_hours, "Cost":task_cost  })
     st.title("View by Tasks")
     st.dataframe(table_for_view_three)
+    
 
-view_one()
-view_two()
-view_three()
+genre = st.radio(
+    "Which view would you like to see",
+    ["View One: Team View", "View Two: View by Assignee", "View Three: Project/Task View"],
+    index=None,
+)
+
+st.write("You selected:", genre)
+
+if genre == "View One: Team View":
+    view_one() 
+
+if genre == "View Two: View by Assignee":
+    view_two() 
+
+if genre == "View Three: Project/Task View":
+    view_three() 
