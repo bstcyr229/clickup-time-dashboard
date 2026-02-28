@@ -22,8 +22,15 @@ def generate_dummy_data():
     "Eva": 110,
     "Pierre": 75
 }
+    days_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    work_days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
     rows = []
-    print(type(tasks))
+    
+    estimated = round(random.uniform(1,12),1)
+    actual = round(estimated * random.uniform(0.5, 2.0),1)
+    #estimated = int(estimated)
+    #actual = int(actual) 
+
 
     for _ in range(60):
         estimated = round(random.uniform(1,12),1)
@@ -43,7 +50,8 @@ def generate_dummy_data():
             "variance": round(actual - estimated,1),
             "Team": team_register, 
             "hourly_rate": rates[selected_assignee],
-            "total_cost": round(actual * rates[selected_assignee],2)
+            "total_cost": round(actual * rates[selected_assignee],2),
+            "day": random.choice(work_days),
 
             
 

@@ -1,6 +1,7 @@
 #Which of your teams is over or under capacity right now
 #A deep dive on each of the members of your team, who is under capacity and who isn't
 #An analysis of individual tasks, time spent vs time estimated 
+#ClickUp API link https://developer.clickup.com/reference/gettimeentrieswithinadaterange
 
 import dummy_data as gdd
 import pandas as pd
@@ -23,7 +24,6 @@ def view_one():
     over_capacity = total_hours < team_actual_hours_worked
     over_capacity_percentage = round(((team_actual_hours_worked / total_hours ) * 100) - 100 )
     team_register_hours = dummy_data_keys.groupby("Team")["actual_hours"].sum()
-    hours_by_team = pd.DataFrame({"Team Members":team_register_two, "Team Capacity": total_hours , "Estimated Hours Worked": team_estimated_hours_worked, "Actual Hours Worked": team_actual_hours_worked, "Difference": difference_in_hours, "Overcapacity":over_capacity, "Over Capacity Percentage" : over_capacity_percentage})
     col1, col2, col3 = st.columns(3)
     col4, col5, col6 = st.columns(3)
     with col1:
@@ -38,9 +38,10 @@ def view_one():
         st.metric(label="Team Two Actual Hours Worked", value=f"{team_actual_hours_worked['Team Two']}", delta=f"{over_capacity_percentage['Team Two']}%")
     with col6:
         st.metric(label="Team Three Actual Hours Worked", value=f"{team_actual_hours_worked['Team Three']}", delta=f"{over_capacity_percentage['Team Three']}%")
-    
+    hours_by_team = pd.DataFrame({"Team Members":team_register_hours, "Team Capacity": total_hours , "Estimated Hours Worked": team_estimated_hours_worked, "Actual Hours Worked": team_actual_hours_worked, "Difference": difference_in_hours, "Overcapacity":over_capacity, "Over Capacity Percentage" : over_capacity_percentage})
     st.title("Team View")
     st.dataframe(data=hours_by_team)
+    st.area_chart(data=hours_by_team,x="Team Members", y=["Estimated Hours Worked", "Actual Hours Worked"])
     #Add in graphs to show the overcapacity percentage for each team, and the difference in hours between estimated and actual hours worked.
     
 def view_two():
@@ -66,21 +67,21 @@ def view_three():
     table_for_view_three = pd.DataFrame({"Project":project_for_view_three, "Tasks": tasks_for_view_three, "Task Id": task_ids_for_view_three, "Assignee":task_assignee, "Estimated Hours": task_estimated_hours, "Actual Hours":task_actual_hours, "Cost":task_cost  })
     st.title("View by Tasks")
     st.dataframe(table_for_view_three)
-    
+view_one()
 
-genre = st.radio(
-    "Which view would you like to see",
-    ["View One: Team View", "View Two: View by Assignee", "View Three: Project/Task View"],
-    index=None,
-)
+#genre = st.radio(
+    #"Which view would you like to see",
+    #["View One: Team View", "View Two: View by Assignee", "View Three: Project/Task View"],
+    #index=None,
+#)
 
-st.write("You selected:", genre)
+#st.write("You selected:", genre)
 
-if genre == "View One: Team View":
-    view_one() 
+#if genre == "View One: Team View":
+    #view_one() 
 
-if genre == "View Two: View by Assignee":
-    view_two() 
+#if genre == "View Two: View by Assignee":
+    #view_two() 
 
-if genre == "View Three: Project/Task View":
-    view_three() 
+#if genre == "View Three: Project/Task View":
+    #view_three() 
