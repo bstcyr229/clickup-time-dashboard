@@ -10,20 +10,7 @@ import streamlit as st
 from dummy_data import generate_dummy_data
 
 dummy_data_keys = gdd.generate_dummy_data()
-assignee = dummy_data_keys["assignee"].unique().tolist()
-project = dummy_data_keys["project"].unique().tolist()
-actual_hours = dummy_data_keys["actual_hours"]
-estimated_hours = dummy_data_keys["estimated_hours"]
-variance = dummy_data_keys["variance"]
-team = dummy_data_keys["Team"].unique()
-team_register = dummy_data_keys["Team"]
 team_register_two = dummy_data_keys.groupby("Team")["assignee"].unique()
-tasks = dummy_data_keys["task"]
-total_cost = dummy_data_keys["total_cost"]
-hourly_rate = dummy_data_keys.groupby("assignee")["hourly_rate"]
-
-
-
 
 
 def view_one():
@@ -38,14 +25,23 @@ def view_one():
     team_register_hours = dummy_data_keys.groupby("Team")["actual_hours"].sum()
     hours_by_team = pd.DataFrame({"Team Members":team_register_two, "Team Capacity": total_hours , "Estimated Hours Worked": team_estimated_hours_worked, "Actual Hours Worked": team_actual_hours_worked, "Difference": difference_in_hours, "Overcapacity":over_capacity, "Over Capacity Percentage" : over_capacity_percentage})
     col1, col2, col3 = st.columns(3)
+    col4, col5, col6 = st.columns(3)
     with col1:
-        st.metric(label="Team One Over Capacity Percentage", value=f"{over_capacity_percentage['Team One']}%")
+        st.metric(label="Team One Total Hours", value=f"{total_hours['Team One']}")
     with col2:
-        st.metric(label="Team Two Over Capacity Percentage", value=f"{over_capacity_percentage['Team Two']}%")
+        st.metric(label="Team Two Total Hours", value=f"{total_hours['Team Two']}")
     with col3:
-        st.metric(label="Team Three Over Capacity Percentage", value=f"{over_capacity_percentage['Team Three']}%")
+        st.metric(label="Team Three Total Hours", value=f"{total_hours['Team Three']}")
+    with col4:
+        st.metric(label="Team One Actual Hours Worked", value=f"{team_actual_hours_worked['Team One']}", delta=f"{over_capacity_percentage['Team One']}%")
+    with col5:
+        st.metric(label="Team Two Actual Hours Worked", value=f"{team_actual_hours_worked['Team Two']}", delta=f"{over_capacity_percentage['Team Two']}%")
+    with col6:
+        st.metric(label="Team Three Actual Hours Worked", value=f"{team_actual_hours_worked['Team Three']}", delta=f"{over_capacity_percentage['Team Three']}%")
+    
     st.title("Team View")
     st.dataframe(data=hours_by_team)
+    #Add in graphs to show the overcapacity percentage for each team, and the difference in hours between estimated and actual hours worked.
     
 def view_two():
     assignee_estimated_hours_worked = dummy_data_keys.groupby("assignee")["estimated_hours"].sum()
