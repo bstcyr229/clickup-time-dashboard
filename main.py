@@ -12,10 +12,11 @@ from dummy_data import generate_dummy_data
 
 dummy_data_keys = gdd.generate_dummy_data()
 team_register_two = dummy_data_keys.groupby("Team")["assignee"].unique()
-
-
+days_seperated = dummy_data_keys.groupby(["Team", "day"])["actual_hours"].sum()
 
 def view_one():
+    days_seperated = dummy_data_keys.groupby(["Team", "day"])["actual_hours"].sum().unstack()
+    days_seperated = str(days_seperated.columns)
     team_members = dummy_data_keys.groupby("Team")["assignee"].unique()
     team_members_number = team_members.apply(len)
     team_estimated_hours_worked = dummy_data_keys.groupby("Team")["estimated_hours"].sum()
@@ -25,7 +26,7 @@ def view_one():
     over_capacity = total_hours < team_actual_hours_worked
     over_capacity_percentage = round(((team_actual_hours_worked / total_hours ) * 100) - 100 )
     team_register_hours = dummy_data_keys.groupby("Team")["actual_hours"].sum()
-    days = dummy_data_keys.groupby("Team")["day"].agg(list)
+    #days = dummy_data_keys.groupby("Team")["day"].agg(list)
     
     col1, col2, col3 = st.columns(3)
     col4, col5, col6 = st.columns(3)
@@ -41,11 +42,12 @@ def view_one():
         st.metric(label="Team Two Actual Hours Worked", value=f"{team_actual_hours_worked['Team Two']}", delta=f"{over_capacity_percentage['Team Two']}%")
     with col6:
         st.metric(label="Team Three Actual Hours Worked", value=f"{team_actual_hours_worked['Team Three']}", delta=f"{over_capacity_percentage['Team Three']}%")
-    hours_by_team = pd.DataFrame({"Team Members":team_register_hours, "Team Capacity": total_hours , "Estimated Hours Worked": team_estimated_hours_worked, "Actual Hours Worked": team_actual_hours_worked, "Difference": difference_in_hours, "Overcapacity":over_capacity, "Over Capacity Percentage" : over_capacity_percentage, "Days Worked": days})
-    print(hours_by_team)
+    hours_by_team = pd.DataFrame({"Team Members":team_register_hours, "Team Capacity": total_hours , "Estimated Hours Worked": team_estimated_hours_worked, "Actual Hours Worked": team_actual_hours_worked, "Difference": difference_in_hours, "Overcapacity":over_capacity, "Over Capacity Percentage" : over_capacity_percentage, "Days": days_seperated})
+    days_by_team = dummy_data_keys.groupby(["Team", "day"])["actual_hours"].sum().unstack()
     st.title("Team View")
     st.dataframe(data=hours_by_team)
-    st.area_chart(data=hours_by_team, x=days_of_week, y=["Estimated Hours Worked", "Actual Hours Worked"], use_container_width=True)
+    st.dataframe(data=days_by_team)
+    st.area_chart(data=hours_by_team, x=days_seperated, y=["Estimated Hours Worked", "Actual Hours Worked"], use_container_width=True)
     #Add in graphs to show the overcapacity percentage for each team, and the difference in hours between estimated and actual hours worked.
     
 def view_two():
