@@ -12,81 +12,83 @@ from dummy_data import generate_dummy_data
 
 dummy_data_keys = gdd.generate_dummy_data()
 team_register_two = dummy_data_keys.groupby("Team")["assignee"].unique()
-days_seperated = dummy_data_keys.groupby(["Team", "day"])["actual_hours"].sum()
+days_seperated = dummy_data_keys.groupby(["Team", "day"])["actual_hours"].sum().unstack()
+print(days_seperated)
 
-def view_one():
-    days_seperated = dummy_data_keys.groupby(["Team", "day"])["actual_hours"].sum().unstack()
-    days_seperated = str(days_seperated.columns)
-    team_members = dummy_data_keys.groupby("Team")["assignee"].unique()
-    team_members_number = team_members.apply(len)
-    team_estimated_hours_worked = dummy_data_keys.groupby("Team")["estimated_hours"].sum()
-    team_actual_hours_worked = dummy_data_keys.groupby("Team")["actual_hours"].sum()
-    difference_in_hours = team_actual_hours_worked - team_estimated_hours_worked
-    total_hours = team_members_number * 40
-    over_capacity = total_hours < team_actual_hours_worked
-    over_capacity_percentage = round(((team_actual_hours_worked / total_hours ) * 100) - 100 )
-    team_register_hours = dummy_data_keys.groupby("Team")["actual_hours"].sum()
-    #days = dummy_data_keys.groupby("Team")["day"].agg(list)
+# def view_one():
+#     days_seperated = dummy_data_keys.groupby(["Team", "day"])["actual_hours"].sum().unstack()
+#     team_members = dummy_data_keys.groupby("Team")["assignee"].unique()
+#     team_members_number = team_members.apply(len)
+#     team_estimated_hours_worked = dummy_data_keys.groupby("Team")["estimated_hours"].sum()
+#     team_actual_hours_worked = dummy_data_keys.groupby("Team")["actual_hours"].sum()
+#     difference_in_hours = team_actual_hours_worked - team_estimated_hours_worked
+#     total_hours = team_members_number * 40
+#     over_capacity = total_hours < team_actual_hours_worked
+#     over_capacity_percentage = round(((team_actual_hours_worked / total_hours ) * 100) - 100 )
+#     team_register_hours = dummy_data_keys.groupby("Team")["actual_hours"].sum()
     
-    col1, col2, col3 = st.columns(3)
-    col4, col5, col6 = st.columns(3)
-    with col1:
-        st.metric(label="Team One Total Capacity", value=f"{total_hours['Team One']}")
-    with col2:
-        st.metric(label="Team Two Total Capacity", value=f"{total_hours['Team Two']}")
-    with col3:
-        st.metric(label="Team Three Total Capacity", value=f"{total_hours['Team Three']}")
-    with col4:
-        st.metric(label="Team One Actual Hours Worked", value=f"{team_actual_hours_worked['Team One']}", delta=f"{over_capacity_percentage['Team One']}%")
-    with col5:
-        st.metric(label="Team Two Actual Hours Worked", value=f"{team_actual_hours_worked['Team Two']}", delta=f"{over_capacity_percentage['Team Two']}%")
-    with col6:
-        st.metric(label="Team Three Actual Hours Worked", value=f"{team_actual_hours_worked['Team Three']}", delta=f"{over_capacity_percentage['Team Three']}%")
-    hours_by_team = pd.DataFrame({"Team Members":team_register_hours, "Team Capacity": total_hours , "Estimated Hours Worked": team_estimated_hours_worked, "Actual Hours Worked": team_actual_hours_worked, "Difference": difference_in_hours, "Overcapacity":over_capacity, "Over Capacity Percentage" : over_capacity_percentage, "Days": days_seperated})
-    days_by_team = dummy_data_keys.groupby(["Team", "day"])["actual_hours"].sum().unstack()
-    st.title("Team View")
-    st.dataframe(data=hours_by_team)
-    st.dataframe(data=days_by_team)
-    st.area_chart(data=hours_by_team, x=days_seperated, y=["Estimated Hours Worked", "Actual Hours Worked"], use_container_width=True)
-    #Add in graphs to show the overcapacity percentage for each team, and the difference in hours between estimated and actual hours worked.
+#     #days = dummy_data_keys.groupby("Team")["day"].agg(list)
     
-def view_two():
-    assignee_estimated_hours_worked = dummy_data_keys.groupby("assignee")["estimated_hours"].sum()
-    assignee_actual_hours_worked = dummy_data_keys.groupby("assignee")["actual_hours"].sum()
-    assginee_total_hours_worked = dummy_data_keys.groupby("assignee")["actual_hours"].sum()
-    capacity_check = assginee_total_hours_worked > 40
-    assignee_tasks_worked = dummy_data_keys.groupby("assignee")["task"].agg(list)
-    data_by_assignee = pd.DataFrame({"Tasks": assignee_tasks_worked, "Estimated Hours": assignee_estimated_hours_worked, "Actual Hours Worked": assignee_actual_hours_worked, "Overcapacity": capacity_check})
-    st.title("View by Employee")
-    st.dataframe(data_by_assignee)
+#     col1, col2, col3 = st.columns(3)
+#     col4, col5, col6 = st.columns(3)
+#     with col1:
+#         st.metric(label="Team One Total Capacity", value=f"{total_hours['Team One']}")
+#     with col2:
+#         st.metric(label="Team Two Total Capacity", value=f"{total_hours['Team Two']}")
+#     with col3:
+#         st.metric(label="Team Three Total Capacity", value=f"{total_hours['Team Three']}")
+#     with col4:
+#         st.metric(label="Team One Actual Hours Worked", value=f"{team_actual_hours_worked['Team One']}", delta=f"{over_capacity_percentage['Team One']}%")
+#     with col5:
+#         st.metric(label="Team Two Actual Hours Worked", value=f"{team_actual_hours_worked['Team Two']}", delta=f"{over_capacity_percentage['Team Two']}%")
+#     with col6:
+#         st.metric(label="Team Three Actual Hours Worked", value=f"{team_actual_hours_worked['Team Three']}", delta=f"{over_capacity_percentage['Team Three']}%")
+#     hours_by_team = pd.DataFrame({"Team Members":team_register_hours, "Team Capacity": total_hours , "Estimated Hours Worked": team_estimated_hours_worked, "Actual Hours Worked": team_actual_hours_worked, "Difference": difference_in_hours, "Overcapacity":over_capacity, "Over Capacity Percentage" : over_capacity_percentage, "Days": days_seperated})
+#     hours_worked_by_team_and_day = pd.DataFrame({"Team One": team_register_hours, "Days:": days_seperated, "Estimated Hours Worked": team_estimated_hours_worked, "Actual Hours Worked": team_actual_hours_worked})
+    
+#     st.title("Team View")
+#     st.dataframe(data=hours_by_team)
+#     st.dataframe(data= hours_worked_by_team_and_day)
+#     st.area_chart(data=hours_worked_by_team_and_day, x="Days:", y=["Estimated Hours Worked", "Actual Hours Worked"], use_container_width=True)
+#     #Add in graphs to show the overcapacity percentage for each team, and the difference in hours between estimated and actual hours worked.
+    
+# def view_two():
+#     assignee_estimated_hours_worked = dummy_data_keys.groupby("assignee")["estimated_hours"].sum()
+#     assignee_actual_hours_worked = dummy_data_keys.groupby("assignee")["actual_hours"].sum()
+#     assginee_total_hours_worked = dummy_data_keys.groupby("assignee")["actual_hours"].sum()
+#     capacity_check = assginee_total_hours_worked > 40
+#     assignee_tasks_worked = dummy_data_keys.groupby("assignee")["task"].agg(list)
+#     data_by_assignee = pd.DataFrame({"Tasks": assignee_tasks_worked, "Estimated Hours": assignee_estimated_hours_worked, "Actual Hours Worked": assignee_actual_hours_worked, "Overcapacity": capacity_check})
+#     st.title("View by Employee")
+#     st.dataframe(data_by_assignee)
     
 
 
-def view_three():
-    project_for_view_three = dummy_data_keys["project"]
-    tasks_for_view_three = dummy_data_keys["task"]
-    task_ids_for_view_three = dummy_data_keys["task_id"]
-    task_estimated_hours = dummy_data_keys["estimated_hours"]
-    task_actual_hours = dummy_data_keys["actual_hours"]
-    task_assignee = dummy_data_keys["assignee"]
-    task_cost = task_actual_hours * dummy_data_keys["hourly_rate"]
-    table_for_view_three = pd.DataFrame({"Project":project_for_view_three, "Tasks": tasks_for_view_three, "Task Id": task_ids_for_view_three, "Assignee":task_assignee, "Estimated Hours": task_estimated_hours, "Actual Hours":task_actual_hours, "Cost":task_cost  })
-    st.title("View by Tasks")
-    st.dataframe(table_for_view_three)
+# def view_three():
+#     project_for_view_three = dummy_data_keys["project"]
+#     tasks_for_view_three = dummy_data_keys["task"]
+#     task_ids_for_view_three = dummy_data_keys["task_id"]
+#     task_estimated_hours = dummy_data_keys["estimated_hours"]
+#     task_actual_hours = dummy_data_keys["actual_hours"]
+#     task_assignee = dummy_data_keys["assignee"]
+#     task_cost = task_actual_hours * dummy_data_keys["hourly_rate"]
+#     table_for_view_three = pd.DataFrame({"Project":project_for_view_three, "Tasks": tasks_for_view_three, "Task Id": task_ids_for_view_three, "Assignee":task_assignee, "Estimated Hours": task_estimated_hours, "Actual Hours":task_actual_hours, "Cost":task_cost  })
+#     st.title("View by Tasks")
+#     st.dataframe(table_for_view_three)
 
-genre = st.radio(
-    "Which view would you like to see",
-    ["View One: Team View", "View Two: View by Assignee", "View Three: Project/Task View"],
-    index=None,
-)
+# genre = st.radio(
+#     "Which view would you like to see",
+#     ["View One: Team View", "View Two: View by Assignee", "View Three: Project/Task View"],
+#     index=None,
+# )
 
-st.write("You selected:", genre)
+# st.write("You selected:", genre)
 
-if genre == "View One: Team View":
-    view_one() 
+# if genre == "View One: Team View":
+#     view_one() 
 
-if genre == "View Two: View by Assignee":
-    view_two() 
+# if genre == "View Two: View by Assignee":
+#     view_two() 
 
-if genre == "View Three: Project/Task View":
-    view_three() 
+# if genre == "View Three: Project/Task View":
+#     view_three() 
