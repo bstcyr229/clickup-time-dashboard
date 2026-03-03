@@ -14,6 +14,8 @@ dummy_data_keys = gdd.generate_dummy_data()
 team_register_two = dummy_data_keys.groupby("Team")["assignee"].unique()
 days_seperated = dummy_data_keys.groupby(["Team", "day"])["actual_hours"].sum().unstack()
 print(days_seperated)
+print(days_seperated.columns.tolist)
+st.area_chart(data=days_seperated, x="day", y=["Team One", "Team Two", "Team Three"], use_container_width=True) 
 
 # def view_one():
 #     days_seperated = dummy_data_keys.groupby(["Team", "day"])["actual_hours"].sum().unstack()
