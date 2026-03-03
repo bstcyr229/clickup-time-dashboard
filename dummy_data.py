@@ -1,3 +1,5 @@
+from calendar import day_name
+
 import pandas as pd
 import random
 import uuid 
@@ -23,19 +25,15 @@ def generate_dummy_data():
     "Pierre": 75
 }   
     rows = []
-    work_days = pd.Categorical(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"])
-    df['work_days'] = pd.Categorical(df['day'], categories=work_days, ordered=True)   
+    work_days = pd.Categorical(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"], categories=["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"], ordered=True)
     
     estimated = round(random.uniform(1,12),1)
     actual = round(estimated * random.uniform(0.5, 2.0),1)
-    #estimated = int(estimated)
-    #actual = int(actual) 
-
     
 
-
+    
     for _ in range (4):
-        for day_name in work_days:
+        for day_name in work_days[0:5]: # Only generate data for weekdays
             for team_name in teams:
         
                 estimated = round(random.uniform(1,12),1)
@@ -46,7 +44,7 @@ def generate_dummy_data():
                 task_id = str(task_id)
                     
                 rows.append({
-                    "assignee": random.choice(teams[team_name]),
+                    "assignee": selected_assignee,
                     "project":random.choice(projects),
                     "task":random.choice(tasks),
                     "task_id": task_id[0:5],
@@ -62,8 +60,9 @@ def generate_dummy_data():
 
         })
 
+    
     df = pd.DataFrame(rows)
-
+    df['day'] = pd.Categorical(df['day'], categories=work_days, ordered=True)
     return df
     
 if __name__ == "__main__":
