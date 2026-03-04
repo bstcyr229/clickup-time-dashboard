@@ -32,12 +32,13 @@ def generate_dummy_data():
     
 
     
-    for _ in range (4):
+    for _ in range (1):
         for day_name in work_days[0:5]: # Only generate data for weekdays
             for team_name in teams:
         
                 estimated = round(random.uniform(1,12),1)
-                actual = round(estimated * random.uniform(1, 12),1)
+                actual = round(estimated * random.uniform(0.5, 1.5),1)
+                billable = round(actual * random.uniform(0.8, 1.2),1)
                 selected_assignee = random.choice(staff)
                 team_register = teams[selected_assignee]
                 task_id = uuid.uuid4()
@@ -51,6 +52,7 @@ def generate_dummy_data():
                     "estimated_hours":estimated,
                     "actual_hours":actual,
                     "variance": round(actual - estimated,1),
+                    "billable_hours": billable,
                     "Team": team_register, 
                     "hourly_rate": rates[selected_assignee],
                     "total_cost": round(actual * rates[selected_assignee],2),
