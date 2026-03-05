@@ -6,12 +6,12 @@
 import dummy_data as gdd
 import pandas as pd
 import streamlit as st
+import altair as alt   
 
 
 from dummy_data import generate_dummy_data
 
 dummy_data_keys = gdd.generate_dummy_data()
-#days_seperated = dummy_data_keys.groupby(["Team", "day"])["actual_hours"].sum().unstack()
 
 
 def view_one():
@@ -58,10 +58,15 @@ def view_one():
     st.dataframe(data=hours_by_team)
     st.dataframe(data= hours_worked_by_team_and_day)
     
+    hours_by_team = pd.DataFrame({"Team Members":team_register_hours, "Team Capacity": total_hours , "Estimated Hours Worked": team_estimated_hours_worked, "Actual Hours Worked": team_actual_hours_worked, "Billable":team_billable_hours , "Overcapacity":over_capacity, "Over Capacity Percentage" : over_capacity_percentage})
+    hours_worked_by_team_and_day = pd.DataFrame({"Team One": team_register_hours, "Estimated Hours Worked": team_estimated_hours_worked, "Actual Hours Worked": team_actual_hours_worked, "Billable Hours Worked": team_billable_hours, "Overcapacity":over_capacity})
+    st.title("Team View")
+    st.dataframe(data=hours_by_team)
+    st.dataframe(data= hours_worked_by_team_and_day)
+    
     days_seperated_for_graph = dummy_data_keys.groupby(["Team", "day"])["actual_hours"].sum().unstack().transpose().reset_index()
     st.write("Actual Hours Worked by Team and Day")
     st.area_chart(data=days_seperated_for_graph, x="day", y=["Team One", "Team Two", "Team Three"], use_container_width=True) 
-
 
 def view_two():
     assignee_estimated_hours_worked = dummy_data_keys.groupby("assignee")["estimated_hours"].sum()
@@ -82,10 +87,17 @@ def view_two():
     with col3:
         st.metric(label="Assignee Average Billable Hours Worked", value=f"{(dummy_data_keys.groupby('assignee')['billable_hours'].sum()).mean():.2f}")
 
-    new_x_index = data_by_assignee.reset_index()
-    st.write("Estimated Hours vs Actual Hours Worked by Assignee")
-    st.area_chart(data=new_x_index, x='assignee', y=["Estimated Hours", "Actual Hours Worked"], use_container_width=True)
+    chart_data = pd.DataFrame({"Assignee": dummy_data_keys.groupby("assignee").first().index, "Estimated": assignee_estimated_hours_worked, "Actual": assignee_actual_hours_worked, "Billable": dummy_data_keys.groupby("assignee")['billable_hours'].sum()}).reset_index()
+    st.write("Assignees: Estimated, Actual and Billable Hours")
+    color_scale = alt.Scale(domain=["Estimated", "Actual", "Billable"], range=["#1f77b4", "#ff7f0e", "#2ca02c"])
 
+    chart = alt.Chart(chart_data).mark_bar().encode(
+        x=alt.X("Assignee:N"),
+        y=alt.Y("value:Q"),
+        color=alt.Color("variable:N", scale=color_scale),
+        xOffset="variable:N"
+    ).transform_fold(["Estimated", "Actual", "Billable"], as_=["variable", "value"])
+    st.altair_chart(chart, use_container_width=True)
 
 
 def view_three():
@@ -99,6 +111,8 @@ def view_three():
     table_for_view_three = pd.DataFrame({"Project":project_for_view_three, "Tasks": tasks_for_view_three, "Task Id": task_ids_for_view_three, "Assignee":task_assignee, "Estimated Hours": task_estimated_hours, "Actual Hours":task_actual_hours, "Cost":task_cost  })
     st.title("View by Tasks")
     st.dataframe(table_for_view_three)
+
+st.title("ClickUp Time Tracker Dashboard")
 
 genre = st.radio(
     "Which view would you like to see",
