@@ -27,6 +27,8 @@ def view_one():
     
     days = dummy_data_keys.groupby("Team")["day"].agg(list)
     
+
+    
     col1, col2, col3 = st.columns(3)
     col4, col5, col6 = st.columns(3)
     col7, col8, col9 = st.columns(3)
@@ -52,17 +54,11 @@ def view_one():
     
     
     
-    hours_by_team = pd.DataFrame({"Team Members":team_register_hours, "Team Capacity": total_hours , "Estimated Hours Worked": team_estimated_hours_worked, "Actual Hours Worked": team_actual_hours_worked, "Billable":team_billable_hours , "Overcapacity":over_capacity, "Over Capacity Percentage" : over_capacity_percentage})
     hours_worked_by_team_and_day = pd.DataFrame({"Team One": team_register_hours, "Estimated Hours Worked": team_estimated_hours_worked, "Actual Hours Worked": team_actual_hours_worked, "Billable Hours Worked": team_billable_hours, "Overcapacity":over_capacity})
     st.title("Team View")
-    st.dataframe(data=hours_by_team)
     st.dataframe(data= hours_worked_by_team_and_day)
     
-    hours_by_team = pd.DataFrame({"Team Members":team_register_hours, "Team Capacity": total_hours , "Estimated Hours Worked": team_estimated_hours_worked, "Actual Hours Worked": team_actual_hours_worked, "Billable":team_billable_hours , "Overcapacity":over_capacity, "Over Capacity Percentage" : over_capacity_percentage})
     hours_worked_by_team_and_day = pd.DataFrame({"Team One": team_register_hours, "Estimated Hours Worked": team_estimated_hours_worked, "Actual Hours Worked": team_actual_hours_worked, "Billable Hours Worked": team_billable_hours, "Overcapacity":over_capacity})
-    st.title("Team View")
-    st.dataframe(data=hours_by_team)
-    st.dataframe(data= hours_worked_by_team_and_day)
     
     days_seperated_for_graph = dummy_data_keys.groupby(["Team", "day"])["actual_hours"].sum().unstack().transpose().reset_index()
     st.write("Actual Hours Worked by Team and Day")
