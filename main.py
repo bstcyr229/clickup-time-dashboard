@@ -72,19 +72,22 @@ def view_two():
     assignee_tasks_worked = dummy_data_keys.groupby("assignee")["task"].agg(list)
     data_by_assignee = pd.DataFrame({"Tasks": assignee_tasks_worked, "Estimated Hours": assignee_estimated_hours_worked, "Actual Hours Worked": assignee_actual_hours_worked, "Billable Hours Worked":dummy_data_keys.groupby("assignee")['billable_hours'].sum(), "Overcapacity": capacity_check})
     st.title("View by Employee")
-    st.dataframe(data_by_assignee)
+    st.title("Assignee Metrics at a Glance")
     col1, col2, col3 = st.columns(3)
-    col4, col5, col6 = st.columns(3)
+    #col4, col5, col6 = st.columns(3)
     
     with col1:
         st.metric(label="Assignee Average Estimated Hours Worked", value=f"{assignee_estimated_hours_worked.mean():.2f}")
     with col2:
         st.metric(label="Assignee Average Actual Hours Worked", value=f"{assignee_actual_hours_worked.mean():.2f}")
     with col3:
-        st.metric(label="Assignee Average Billable Hours Worked", value=f"{(dummy_data_keys.groupby('assignee')['billable_hours'].sum()).mean():.2f}")
-
+        st.metric(label="Assignee Average Billable Hours Worked", value=f"{(dummy_data_keys.groupby('assignee')['billable_hours'].sum()).mean():.2f}")   
+    
+    st.dataframe(data_by_assignee)
+    
+    
     chart_data = pd.DataFrame({"Assignee": dummy_data_keys.groupby("assignee").first().index, "Estimated": assignee_estimated_hours_worked, "Actual": assignee_actual_hours_worked, "Billable": dummy_data_keys.groupby("assignee")['billable_hours'].sum()}).reset_index()
-    st.write("Assignees: Estimated, Actual and Billable Hours")
+    st.title("Assignees: Estimated, Actual and Billable Hours")
     color_scale = alt.Scale(domain=["Estimated", "Actual", "Billable"], range=["#1f77b4", "#ff7f0e", "#2ca02c"])
 
     chart = alt.Chart(chart_data).mark_bar().encode(
@@ -95,18 +98,36 @@ def view_two():
     ).transform_fold(["Estimated", "Actual", "Billable"], as_=["variable", "value"])
     st.altair_chart(chart, use_container_width=True)
 
-
 def view_three():
-    project_for_view_three = dummy_data_keys["project"]
+    
     tasks_for_view_three = dummy_data_keys["task"]
     task_ids_for_view_three = dummy_data_keys["task_id"]
     task_estimated_hours = dummy_data_keys["estimated_hours"]
     task_actual_hours = dummy_data_keys["actual_hours"]
     task_assignee = dummy_data_keys["assignee"]
+    task_to_billable = dummy_data_keys["billable_hours"]
     task_cost = task_actual_hours * dummy_data_keys["hourly_rate"]
-    table_for_view_three = pd.DataFrame({"Project":project_for_view_three, "Tasks": tasks_for_view_three, "Task Id": task_ids_for_view_three, "Assignee":task_assignee, "Estimated Hours": task_estimated_hours, "Actual Hours":task_actual_hours, "Cost":task_cost  })
+    table_for_view_three = pd.DataFrame({"Tasks": tasks_for_view_three, "Task Id": task_ids_for_view_three, "Assignee":task_assignee, "Estimated Hours": task_estimated_hours, "Actual Hours":task_actual_hours,"Billable":task_to_billable, "Cost":task_cost  })
     st.title("View by Tasks")
+    
+    st.title("Task Metrics at a Glance")
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric(label="Average Estimated Hours per Task", value=f"{task_estimated_hours.mean():.2f}")
+    with col2:
+        st.metric(label="Average Actual Hours per Task", value=f"{task_actual_hours.mean():.2f}")
+    with col3:
+        st.metric(label="Average Billable Hours per Task", value=f"{task_to_billable.mean():.2f}")
+    chart = alt.Chart(table_for_view_three).mark_bar().encode( 
+        x=alt.X("Tasks:N"),
+        y=alt.Y("value:Q"),
+        color=alt.Color("variable:N", scale=alt.Scale(domain=["Estimated Hours", "Actual Hours", "Billable"] , range=["#1f77b4", "#ff7f0e", "#2ca02c"])),
+        xOffset="variable:N"
+
+    ).transform_fold(["Estimated Hours", "Actual Hours","Billable"], as_=["variable", "value"])
     st.dataframe(table_for_view_three)
+    st.title("Tasks: Estimated, Actual and Billable Hours")
+    st.altair_chart(chart, use_container_width=True)
 
 st.title("ClickUp Time Tracker Dashboard")
 
