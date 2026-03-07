@@ -10,16 +10,12 @@ import altair as alt
 import requests
 import os 
 
-from dotenv import load_dotenv, dotenv_values
+
 from dummy_data import generate_dummy_data
 
 dummy_data_keys = gdd.generate_dummy_data()
 
-load_dotenv()
-api_key = os.getenv("clickup_api")
-headers ={"Authorization": api_key}
-response = requests.get("https://api.clickup.com/api/v2/team", headers=headers )
-data = response.json()
+
 
 def view_one():
     team_members = dummy_data_keys.groupby("Team")["assignee"].unique()
