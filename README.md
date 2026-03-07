@@ -73,8 +73,7 @@ The dummy data simulates a realistic one week work period across seven team memb
 **A note on the "Team" grouping:** ClickUp's API exposes teams as User Groups,
 the API terminology differs from the UI. In a live version, the dashboard would 
 pull User Groups directly from the API to define the team dimension. The current 
-version uses dummy data with manually assigned teams because testing against real 
-ClickUp users isn't possible in a demo environment. 
+version uses dummy data with manually assigned teams as ClickUp at this time does not allow users to create dummy users.
 
 ---
 
