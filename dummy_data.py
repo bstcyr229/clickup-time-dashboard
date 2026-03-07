@@ -25,7 +25,7 @@ def generate_dummy_data():
     "Pierre": 75
 }   
     rows = []
-    work_days = pd.Categorical(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"], categories=["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"], ordered=True)
+    work_days = pd.Categorical(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], categories=["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], ordered=True)
     
     estimated = round(random.uniform(1,12),1)
     actual = round(estimated * random.uniform(0.5, 2.0),1)
