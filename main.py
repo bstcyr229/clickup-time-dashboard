@@ -114,7 +114,8 @@ def view_three():
     task_assignee = dummy_data_keys["assignee"]
     task_to_billable = dummy_data_keys["billable_hours"]
     task_cost = task_actual_hours * dummy_data_keys["hourly_rate"]
-    table_for_view_three = pd.DataFrame({"Tasks": tasks_for_view_three, "Task Id": task_ids_for_view_three, "Assignee":task_assignee, "Estimated Hours": task_estimated_hours, "Actual Hours":task_actual_hours,"Billable":task_to_billable, "Cost":task_cost  })
+    table_for_view_three = pd.DataFrame({"Tasks": tasks_for_view_three, "Task Id": task_ids_for_view_three, "Assignee":task_assignee, "Estimated Hours": task_estimated_hours, "Actual Hours":task_actual_hours,"Billable":task_to_billable, "Cost":task_cost  }).set_index("Tasks")
+    table_for_chart_three = pd.DataFrame({"Tasks": tasks_for_view_three, "Task Id": task_ids_for_view_three, "Assignee":task_assignee, "Estimated Hours": task_estimated_hours, "Actual Hours":task_actual_hours,"Billable":task_to_billable, "Cost":task_cost  })
     st.title("View by Tasks")
     
     st.title("Task Metrics at a Glance")
@@ -125,7 +126,7 @@ def view_three():
         st.metric(label="Average Actual Hours per Task", value=f"{task_actual_hours.mean():.2f}")
     with col3:
         st.metric(label="Average Billable Hours per Task", value=f"{task_to_billable.mean():.2f}")
-    chart = alt.Chart(table_for_view_three).mark_bar().encode( 
+    chart = alt.Chart(table_for_chart_three).mark_bar().encode( 
         x=alt.X("Tasks:N"),
         y=alt.Y("value:Q"),
         color=alt.Color("variable:N", scale=alt.Scale(domain=["Estimated Hours", "Actual Hours", "Billable"] , range=["#1f77b4", "#ff7f0e", "#2ca02c"])),
