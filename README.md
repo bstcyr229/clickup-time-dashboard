@@ -21,22 +21,21 @@ ClickUp's native reporting can tell you hours logged. It can't easily tell you w
 ### View One — Hours Worked by Team
 See total hours worked by each team across the work week. The area chart breaks down daily hours by team so you can spot load imbalances at a glance. Includes capacity metrics and over-capacity percentage per team.
 
-> 📸 ![View One in Action](view%20one%final.jpg)
+> 📸 ![View One in Action](View%20one%20final.jpg)
 
 ---
 
 ### View Two — Assignee Breakdown
 Individual-level metrics showing estimated hours, actual hours worked, and total billable value per assignee. Includes a delta indicator that flags whether someone is over or under their estimated capacity, colored automatically by Streamlit.
 
-> 📸 ![View Two in Action](view%20two%final.jpg)
+> 📸 ![View Two in Action](View%20two%20final.jpg)
 
 ---
 
 ### View Three — Task Detail
 Task-level drill-down showing estimated vs. actual variance by project and task. The view that answers the question: "Where did all the time go?"
 
-> 📸 ![View Three in Action](view%20three%final.jpg)
-
+> 📸 ![View Three in Action](View%20three%20final.jpg)
 ---
 
 ## How to Run It Locally
