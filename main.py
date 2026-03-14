@@ -8,16 +8,29 @@ import pandas as pd
 import streamlit as st
 import altair as alt   
 import requests
-import os 
+import os
+import json 
 
 from dotenv import load_dotenv
 load_dotenv()
 
 click_up_api_key = os.getenv("cu_api_key")
 headers = {"Authorization": click_up_api_key}
-response = requests.get("https://api.clickup.com/api/v2/team", headers=headers)
-data = response.json()
-print(data)
+
+team_response = requests.get("https://api.clickup.com/api/v2/team", headers=headers)
+team_data = team_response.json().get("teams")
+with open("team_data.json", "w") as f:
+    json.dump(team_data, f, indent=2)
+for team in team_data:
+    #task_response = requests.get(f"https://api.clickup.com/api/v2/task/{team['id']}/task", headers=headers)
+    url = f"https://api.clickup.com/api/v2/team/{team['id']}/task"
+    print(url)
+    task_response = requests.get(url, headers=headers)
+    #task_data = task_response.json()
+    #with open("task_data.json", "w") as f:
+        #json.dump(team_data, f, indent=2)
+    #print(json.dumps(task_data, indent=2))
+
 
 # from dummy_data import generate_dummy_data
 
