@@ -1,0 +1,466 @@
+[
+   {
+      "id": "901313501057",
+      "name": "Python Time Tracking Project",
+      "color": "#3e63dd",
+      "private": false,
+      "avatar": null,
+      "admin_can_manage": false,
+      "statuses": [
+         {
+            "id": "p901313501057_dIhhGcjG",
+            "status": "to do",
+            "type": "open",
+            "orderindex": 0,
+            "color": "#87909e"
+         },
+         {
+            "id": "p901313501057_9c5yoFm5",
+            "status": "planning",
+            "type": "custom",
+            "orderindex": 1,
+            "color": "#87909e"
+         },
+         {
+            "id": "p901313501057_7J10sTzU",
+            "status": "in progress",
+            "type": "custom",
+            "orderindex": 2,
+            "color": "#5f55ee"
+         },
+         {
+            "id": "p901313501057_PLbyDQyN",
+            "status": "at risk",
+            "type": "custom",
+            "orderindex": 3,
+            "color": "#e16b16"
+         },
+         {
+            "id": "p901313501057_Vj1U6ENP",
+            "status": "update required",
+            "type": "custom",
+            "orderindex": 4,
+            "color": "#f8ae00"
+         },
+         {
+            "id": "p901313501057_HvGUYOER",
+            "status": "on hold",
+            "type": "custom",
+            "orderindex": 5,
+            "color": "#aa8d80"
+         },
+         {
+            "id": "p901313501057_i32dkcWQ",
+            "status": "complete",
+            "type": "done",
+            "orderindex": 6,
+            "color": "#0f9d9f"
+         },
+         {
+            "id": "p901313501057_sma8w6ab",
+            "status": "cancelled",
+            "type": "closed",
+            "orderindex": 7,
+            "color": "#008844"
+         }
+      ],
+      "multiple_assignees": true,
+      "features": {
+         "due_dates": {
+            "enabled": true,
+            "start_date": true,
+            "remap_due_dates": false,
+            "remap_closed_due_date": false
+         },
+         "sprints": {
+            "enabled": false
+         },
+         "time_tracking": {
+            "enabled": true,
+            "harvest": false,
+            "rollup": true,
+            "default_to_billable": 2
+         },
+         "points": {
+            "enabled": false
+         },
+         "custom_items": {
+            "enabled": false
+         },
+         "priorities": {
+            "enabled": true,
+            "priorities": [
+               {
+                  "color": "#f50000",
+                  "id": "1",
+                  "orderindex": "1",
+                  "priority": "urgent"
+               },
+               {
+                  "color": "#f8ae00",
+                  "id": "2",
+                  "orderindex": "2",
+                  "priority": "high"
+               },
+               {
+                  "color": "#6fddff",
+                  "id": "3",
+                  "orderindex": "3",
+                  "priority": "normal"
+               },
+               {
+                  "color": "#d8d8d8",
+                  "id": "4",
+                  "orderindex": "4",
+                  "priority": "low"
+               }
+            ]
+         },
+         "tags": {
+            "enabled": true
+         },
+         "time_estimates": {
+            "enabled": true,
+            "rollup": true,
+            "per_assignee": false
+         },
+         "check_unresolved": {
+            "enabled": true,
+            "subtasks": null,
+            "checklists": null,
+            "comments": null
+         },
+         "milestones": {
+            "enabled": true
+         },
+         "custom_fields": {
+            "enabled": true
+         },
+         "remap_dependencies": {
+            "enabled": true
+         },
+         "dependency_warning": {
+            "enabled": true
+         },
+         "status_pies": {
+            "enabled": true
+         },
+         "multiple_assignees": {
+            "enabled": true
+         },
+         "emails": {
+            "enabled": true
+         },
+         "scheduler_enabled": false,
+         "dependency_type_enabled": false,
+         "dependency_enforcement": {
+            "enforcement_enabled": false,
+            "enforcement_mode": 0
+         },
+         "reschedule_closed_dependencies": {
+            "enabled": true
+         }
+      },
+      "archived": false
+   },
+   {
+      "id": "90139175324",
+      "name": "Personal Improvement",
+      "color": "#6e56cf",
+      "private": false,
+      "avatar": null,
+      "admin_can_manage": false,
+      "statuses": [
+         {
+            "id": "p90139175324_B5iOmq0V",
+            "status": "to do",
+            "type": "open",
+            "orderindex": 0,
+            "color": "#87909e"
+         },
+         {
+            "id": "p90139175324_VyekmgIv",
+            "status": "in progress",
+            "type": "custom",
+            "orderindex": 1,
+            "color": "#5f55ee"
+         },
+         {
+            "id": "p90139175324_TDa3mW5I",
+            "status": "done",
+            "type": "done",
+            "orderindex": 2,
+            "color": "#8d8d8d"
+         },
+         {
+            "id": "p90139175324_aEMnMhK7",
+            "status": "complete",
+            "type": "closed",
+            "orderindex": 3,
+            "color": "#008844"
+         }
+      ],
+      "multiple_assignees": true,
+      "features": {
+         "due_dates": {
+            "enabled": true,
+            "start_date": true,
+            "remap_due_dates": false,
+            "remap_closed_due_date": false
+         },
+         "sprints": {
+            "enabled": false
+         },
+         "time_tracking": {
+            "enabled": true,
+            "harvest": false,
+            "rollup": true,
+            "default_to_billable": 2
+         },
+         "points": {
+            "enabled": false
+         },
+         "custom_items": {
+            "enabled": false
+         },
+         "priorities": {
+            "enabled": true,
+            "priorities": [
+               {
+                  "color": "#f50000",
+                  "id": "1",
+                  "orderindex": "1",
+                  "priority": "urgent"
+               },
+               {
+                  "color": "#f8ae00",
+                  "id": "2",
+                  "orderindex": "2",
+                  "priority": "high"
+               },
+               {
+                  "color": "#6fddff",
+                  "id": "3",
+                  "orderindex": "3",
+                  "priority": "normal"
+               },
+               {
+                  "color": "#d8d8d8",
+                  "id": "4",
+                  "orderindex": "4",
+                  "priority": "low"
+               }
+            ]
+         },
+         "tags": {
+            "enabled": true
+         },
+         "time_estimates": {
+            "enabled": true,
+            "rollup": true,
+            "per_assignee": false
+         },
+         "check_unresolved": {
+            "enabled": true,
+            "subtasks": null,
+            "checklists": null,
+            "comments": null
+         },
+         "milestones": {
+            "enabled": true
+         },
+         "custom_fields": {
+            "enabled": true
+         },
+         "remap_dependencies": {
+            "enabled": true
+         },
+         "dependency_warning": {
+            "enabled": true
+         },
+         "status_pies": {
+            "enabled": true
+         },
+         "multiple_assignees": {
+            "enabled": true
+         },
+         "emails": {
+            "enabled": true
+         },
+         "scheduler_enabled": false,
+         "dependency_type_enabled": false,
+         "dependency_enforcement": {
+            "enforcement_mode": 0,
+            "enforcement_enabled": false
+         },
+         "reschedule_closed_dependencies": {
+            "enabled": true
+         }
+      },
+      "archived": false
+   },
+   {
+      "id": "901313524127",
+      "name": "Management",
+      "color": "#3e63dd",
+      "private": false,
+      "avatar": null,
+      "admin_can_manage": false,
+      "statuses": [
+         {
+            "id": "p901313524127_kjPuskYq",
+            "status": "to do",
+            "type": "open",
+            "orderindex": 0,
+            "color": "#87909e"
+         },
+         {
+            "id": "p901313524127_u1hj4Vsv",
+            "status": "planning",
+            "type": "custom",
+            "orderindex": 1,
+            "color": "#87909e"
+         },
+         {
+            "id": "p901313524127_cF4tIF7W",
+            "status": "in progress",
+            "type": "custom",
+            "orderindex": 2,
+            "color": "#5f55ee"
+         },
+         {
+            "id": "p901313524127_AoqMwnXG",
+            "status": "at risk",
+            "type": "custom",
+            "orderindex": 3,
+            "color": "#e16b16"
+         },
+         {
+            "id": "p901313524127_ZZiDbLh4",
+            "status": "update required",
+            "type": "custom",
+            "orderindex": 4,
+            "color": "#f8ae00"
+         },
+         {
+            "id": "p901313524127_ZJzou1V4",
+            "status": "on hold",
+            "type": "custom",
+            "orderindex": 5,
+            "color": "#aa8d80"
+         },
+         {
+            "id": "p901313524127_rOLah9Uj",
+            "status": "complete",
+            "type": "done",
+            "orderindex": 6,
+            "color": "#0f9d9f"
+         },
+         {
+            "id": "p901313524127_kDgVakEy",
+            "status": "cancelled",
+            "type": "closed",
+            "orderindex": 7,
+            "color": "#008844"
+         }
+      ],
+      "multiple_assignees": true,
+      "features": {
+         "due_dates": {
+            "enabled": true,
+            "start_date": true,
+            "remap_due_dates": false,
+            "remap_closed_due_date": false
+         },
+         "sprints": {
+            "enabled": false
+         },
+         "time_tracking": {
+            "enabled": true,
+            "harvest": false,
+            "rollup": true,
+            "default_to_billable": 2
+         },
+         "points": {
+            "enabled": false
+         },
+         "custom_items": {
+            "enabled": false
+         },
+         "priorities": {
+            "enabled": true,
+            "priorities": [
+               {
+                  "color": "#f50000",
+                  "id": "1",
+                  "orderindex": "1",
+                  "priority": "urgent"
+               },
+               {
+                  "color": "#f8ae00",
+                  "id": "2",
+                  "orderindex": "2",
+                  "priority": "high"
+               },
+               {
+                  "color": "#6fddff",
+                  "id": "3",
+                  "orderindex": "3",
+                  "priority": "normal"
+               },
+               {
+                  "color": "#d8d8d8",
+                  "id": "4",
+                  "orderindex": "4",
+                  "priority": "low"
+               }
+            ]
+         },
+         "tags": {
+            "enabled": true
+         },
+         "time_estimates": {
+            "enabled": true,
+            "rollup": true,
+            "per_assignee": false
+         },
+         "check_unresolved": {
+            "enabled": true,
+            "subtasks": null,
+            "checklists": null,
+            "comments": null
+         },
+         "milestones": {
+            "enabled": true
+         },
+         "custom_fields": {
+            "enabled": true
+         },
+         "remap_dependencies": {
+            "enabled": true
+         },
+         "dependency_warning": {
+            "enabled": true
+         },
+         "status_pies": {
+            "enabled": true
+         },
+         "multiple_assignees": {
+            "enabled": true
+         },
+         "emails": {
+            "enabled": true
+         },
+         "scheduler_enabled": false,
+         "dependency_type_enabled": false,
+         "dependency_enforcement": {
+            "enforcement_enabled": false,
+            "enforcement_mode": 0
+         },
+         "reschedule_closed_dependencies": {
+            "enabled": true
+         }
+      },
+      "archived": false
+   }
+]
