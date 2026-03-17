@@ -1,0 +1,54 @@
+[
+   {
+      "id": "90131994467",
+      "name": "Bryan StCyr's  Workspace",
+      "color": "#40BC86",
+      "avatar": null,
+      "members": [
+         {
+            "user": {
+               "id": 105980812,
+               "username": null,
+               "email": "shixson93@gmail.com",
+               "color": null,
+               "profilePicture": null,
+               "initials": "S",
+               "role": 3,
+               "role_subtype": 0,
+               "role_key": "member",
+               "custom_role": null,
+               "last_active": null,
+               "date_joined": null,
+               "date_invited": "1753750508816"
+            },
+            "invited_by": {
+               "id": 150294543,
+               "username": "Bryan StCyr",
+               "color": "#000",
+               "email": "bstcyr229@gmail.com",
+               "initials": "BS",
+               "profilePicture": null,
+               "banned_date": null,
+               "status": "invited"
+            }
+         },
+         {
+            "user": {
+               "id": 150294543,
+               "username": "Bryan StCyr",
+               "email": "bstcyr229@gmail.com",
+               "color": "#000",
+               "profilePicture": null,
+               "initials": "BS",
+               "role": 1,
+               "role_subtype": 0,
+               "role_key": "owner",
+               "custom_role": null,
+               "last_active": "1773690002816",
+               "date_joined": "1752530627023",
+               "date_invited": "1752530627023"
+            }
+         }
+      ]
+   }
+]
