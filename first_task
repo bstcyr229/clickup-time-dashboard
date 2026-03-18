@@ -1,0 +1,95 @@
+{
+   "id": "86afuyyub",
+   "custom_id": null,
+   "custom_item_id": 0,
+   "name": "Earn PMP",
+   "text_content": "",
+   "description": "",
+   "status": {
+      "status": "to do",
+      "id": "p90139175324_B5iOmq0V",
+      "color": "#87909e",
+      "type": "open",
+      "orderindex": 0
+   },
+   "orderindex": "39908404.00000000000000000000000000000000",
+   "date_created": "1772458295573",
+   "date_updated": "1772458295573",
+   "date_closed": null,
+   "date_done": null,
+   "archived": false,
+   "creator": {
+      "id": 150294543,
+      "username": "Bryan StCyr",
+      "color": "#000",
+      "email": "bstcyr229@gmail.com",
+      "profilePicture": null
+   },
+   "assignees": [],
+   "group_assignees": [],
+   "watchers": [
+      {
+         "id": 150294543,
+         "username": "Bryan StCyr",
+         "color": "#000",
+         "initials": "BS",
+         "email": "bstcyr229@gmail.com",
+         "profilePicture": null
+      }
+   ],
+   "checklists": [],
+   "tags": [],
+   "parent": null,
+   "top_level_parent": null,
+   "priority": null,
+   "due_date": null,
+   "start_date": null,
+   "points": null,
+   "time_estimate": null,
+   "custom_fields": [],
+   "dependencies": [],
+   "linked_tasks": [],
+   "locations": [],
+   "team_id": "90131994467",
+   "url": "https://app.clickup.com/t/86afuyyub",
+   "sharing": {
+      "public": false,
+      "public_share_expires_on": null,
+      "public_fields": [
+         "assignees",
+         "priority",
+         "due_date",
+         "content",
+         "comments",
+         "attachments",
+         "customFields",
+         "subtasks",
+         "tags",
+         "checklists",
+         "coverimage"
+      ],
+      "token": null,
+      "seo_optimized": false
+   },
+   "permission_level": "create",
+   "list": {
+      "id": "901325972701",
+      "name": "Master List",
+      "access": true
+   },
+   "project": {
+      "id": "901317491810",
+      "name": "hidden",
+      "hidden": true,
+      "access": true
+   },
+   "folder": {
+      "id": "901317491810",
+      "name": "hidden",
+      "hidden": true,
+      "access": true
+   },
+   "space": {
+      "id": "90139175324"
+   }
+}

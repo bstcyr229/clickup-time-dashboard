@@ -1,1 +1,192 @@
-[]
+[
+   {
+      "id": "86afw5833",
+      "custom_id": null,
+      "custom_item_id": 0,
+      "name": "Investigate debt relief for hospital bill",
+      "text_content": "",
+      "description": "",
+      "status": {
+         "status": "to do",
+         "id": "p901313524127_kjPuskYq",
+         "color": "#87909e",
+         "type": "open",
+         "orderindex": 0
+      },
+      "orderindex": "39908412.00000000000000000000000000000000",
+      "date_created": "1772543792628",
+      "date_updated": "1772543792628",
+      "date_closed": null,
+      "date_done": null,
+      "archived": false,
+      "creator": {
+         "id": 150294543,
+         "username": "Bryan StCyr",
+         "color": "#000",
+         "email": "bstcyr229@gmail.com",
+         "profilePicture": null
+      },
+      "assignees": [],
+      "group_assignees": [],
+      "watchers": [
+         {
+            "id": 150294543,
+            "username": "Bryan StCyr",
+            "color": "#000",
+            "initials": "BS",
+            "email": "bstcyr229@gmail.com",
+            "profilePicture": null
+         }
+      ],
+      "checklists": [],
+      "tags": [],
+      "parent": null,
+      "top_level_parent": null,
+      "priority": null,
+      "due_date": null,
+      "start_date": null,
+      "points": null,
+      "time_estimate": null,
+      "custom_fields": [],
+      "dependencies": [],
+      "linked_tasks": [],
+      "locations": [],
+      "team_id": "90131994467",
+      "url": "https://app.clickup.com/t/86afw5833",
+      "sharing": {
+         "public": false,
+         "public_share_expires_on": null,
+         "public_fields": [
+            "assignees",
+            "priority",
+            "due_date",
+            "content",
+            "comments",
+            "attachments",
+            "customFields",
+            "subtasks",
+            "tags",
+            "checklists",
+            "coverimage"
+         ],
+         "token": null,
+         "seo_optimized": false
+      },
+      "permission_level": "create",
+      "list": {
+         "id": "901326023602",
+         "name": "List",
+         "access": true
+      },
+      "project": {
+         "id": "901317527532",
+         "name": "hidden",
+         "hidden": true,
+         "access": true
+      },
+      "folder": {
+         "id": "901317527532",
+         "name": "hidden",
+         "hidden": true,
+         "access": true
+      },
+      "space": {
+         "id": "901313524127"
+      }
+   },
+   {
+      "id": "86afw57nn",
+      "custom_id": null,
+      "custom_item_id": 0,
+      "name": "Investigate debt forgiveness for CU Boulder",
+      "text_content": "",
+      "description": "",
+      "status": {
+         "status": "to do",
+         "id": "p901313524127_kjPuskYq",
+         "color": "#87909e",
+         "type": "open",
+         "orderindex": 0
+      },
+      "orderindex": "39908411.00000000000000000000000000000000",
+      "date_created": "1772543772347",
+      "date_updated": "1772543772347",
+      "date_closed": null,
+      "date_done": null,
+      "archived": false,
+      "creator": {
+         "id": 150294543,
+         "username": "Bryan StCyr",
+         "color": "#000",
+         "email": "bstcyr229@gmail.com",
+         "profilePicture": null
+      },
+      "assignees": [],
+      "group_assignees": [],
+      "watchers": [
+         {
+            "id": 150294543,
+            "username": "Bryan StCyr",
+            "color": "#000",
+            "initials": "BS",
+            "email": "bstcyr229@gmail.com",
+            "profilePicture": null
+         }
+      ],
+      "checklists": [],
+      "tags": [],
+      "parent": null,
+      "top_level_parent": null,
+      "priority": null,
+      "due_date": null,
+      "start_date": null,
+      "points": null,
+      "time_estimate": null,
+      "custom_fields": [],
+      "dependencies": [],
+      "linked_tasks": [],
+      "locations": [],
+      "team_id": "90131994467",
+      "url": "https://app.clickup.com/t/86afw57nn",
+      "sharing": {
+         "public": false,
+         "public_share_expires_on": null,
+         "public_fields": [
+            "assignees",
+            "priority",
+            "due_date",
+            "content",
+            "comments",
+            "attachments",
+            "customFields",
+            "subtasks",
+            "tags",
+            "checklists",
+            "coverimage"
+         ],
+         "token": null,
+         "seo_optimized": false
+      },
+      "permission_level": "create",
+      "list": {
+         "id": "901326023602",
+         "name": "List",
+         "access": true
+      },
+      "project": {
+         "id": "901317527532",
+         "name": "hidden",
+         "hidden": true,
+         "access": true
+      },
+      "folder": {
+         "id": "901317527532",
+         "name": "hidden",
+         "hidden": true,
+         "access": true
+      },
+      "space": {
+         "id": "901313524127"
+      }
+   }
+]
