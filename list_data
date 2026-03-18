@@ -1,0 +1,53 @@
+[
+   {
+      "id": "901326419328",
+      "name": "List",
+      "orderindex": 0,
+      "status": null,
+      "priority": null,
+      "assignee": null,
+      "task_count": 0,
+      "due_date": null,
+      "start_date": null,
+      "folder": {
+         "id": "901317800486",
+         "name": "Debts",
+         "hidden": false,
+         "access": true
+      },
+      "space": {
+         "id": "901313524127",
+         "name": "Management",
+         "access": true
+      },
+      "archived": false,
+      "override_statuses": false,
+      "permission_level": "create"
+   },
+   {
+      "id": "901326023602",
+      "name": "List",
+      "orderindex": 0,
+      "content": "",
+      "status": null,
+      "priority": null,
+      "assignee": null,
+      "task_count": 2,
+      "due_date": null,
+      "start_date": null,
+      "folder": {
+         "id": "901317527532",
+         "name": "hidden",
+         "hidden": true,
+         "access": true
+      },
+      "space": {
+         "id": "901313524127",
+         "name": "Management",
+         "access": true
+      },
+      "archived": false,
+      "override_statuses": false,
+      "permission_level": "create"
+   }
+]
