@@ -1,0 +1,197 @@
+[
+   {
+      "id": "5002299506063832580",
+      "task": {
+         "id": "86agah90x",
+         "name": "Task 1",
+         "status": {
+            "status": "to do",
+            "color": "#87909e",
+            "type": "open",
+            "orderindex": 0
+         },
+         "custom_type": null
+      },
+      "wid": "90131994467",
+      "user": {
+         "id": 150294543,
+         "username": "Bryan StCyr",
+         "email": "bstcyr229@gmail.com",
+         "color": "#000",
+         "initials": "BS",
+         "profilePicture": null
+      },
+      "billable": true,
+      "start": "1773686420855",
+      "end": "1773697220855",
+      "duration": "10800000",
+      "description": "",
+      "tags": [],
+      "source": "clickup",
+      "at": "1773956424746",
+      "is_locked": false,
+      "approval_id": null,
+      "task_location": {
+         "list_id": "901326488637",
+         "folder_id": "901317840051",
+         "space_id": "901313695040"
+      },
+      "task_url": "https://app.clickup.com/t/86agah90x"
+   },
+   {
+      "id": "5002299867545728522",
+      "task": {
+         "id": "86agah917",
+         "name": "Task 2",
+         "status": {
+            "status": "to do",
+            "color": "#87909e",
+            "type": "open",
+            "orderindex": 0
+         },
+         "custom_type": null
+      },
+      "wid": "90131994467",
+      "user": {
+         "id": 150294543,
+         "username": "Bryan StCyr",
+         "email": "bstcyr229@gmail.com",
+         "color": "#000",
+         "initials": "BS",
+         "profilePicture": null
+      },
+      "billable": true,
+      "start": "1773765640408",
+      "end": "1773783640408",
+      "duration": "18000000",
+      "description": "",
+      "tags": [],
+      "source": "clickup",
+      "at": "1773956446293",
+      "is_locked": false,
+      "approval_id": null,
+      "task_location": {
+         "list_id": "901326488637",
+         "folder_id": "901317840051",
+         "space_id": "901313695040"
+      },
+      "task_url": "https://app.clickup.com/t/86agah917"
+   },
+   {
+      "id": "5002300875118212641",
+      "task": {
+         "id": "86agah91g",
+         "name": "Task 3",
+         "status": {
+            "status": "to do",
+            "color": "#87909e",
+            "type": "open",
+            "orderindex": 0
+         },
+         "custom_type": null
+      },
+      "wid": "90131994467",
+      "user": {
+         "id": 150294543,
+         "username": "Bryan StCyr",
+         "email": "bstcyr229@gmail.com",
+         "color": "#000",
+         "initials": "BS",
+         "profilePicture": null
+      },
+      "billable": false,
+      "start": "1773862900044",
+      "end": "1773870100044",
+      "duration": "7200000",
+      "description": "",
+      "tags": [],
+      "source": "clickup",
+      "at": "1773956506351",
+      "is_locked": false,
+      "approval_id": null,
+      "task_location": {
+         "list_id": "901326488637",
+         "folder_id": "901317840051",
+         "space_id": "901313695040"
+      },
+      "task_url": "https://app.clickup.com/t/86agah91g"
+   },
+   {
+      "id": "5002301100520109603",
+      "task": {
+         "id": "86agah91z",
+         "name": "Task 4",
+         "status": {
+            "status": "to do",
+            "color": "#87909e",
+            "type": "open",
+            "orderindex": 0
+         },
+         "custom_type": null
+      },
+      "wid": "90131994467",
+      "user": {
+         "id": 150294543,
+         "username": "Bryan StCyr",
+         "email": "bstcyr229@gmail.com",
+         "color": "#000",
+         "initials": "BS",
+         "profilePicture": null
+      },
+      "billable": true,
+      "start": "1773682914452",
+      "end": "1773697314452",
+      "duration": "14400000",
+      "description": "",
+      "tags": [],
+      "source": "clickup",
+      "at": "1773956519783",
+      "is_locked": false,
+      "approval_id": null,
+      "task_location": {
+         "list_id": "901326488637",
+         "folder_id": "901317840051",
+         "space_id": "901313695040"
+      },
+      "task_url": "https://app.clickup.com/t/86agah91z"
+   },
+   {
+      "id": "5002301381756581421",
+      "task": {
+         "id": "86agah929",
+         "name": "Task 5",
+         "status": {
+            "status": "to do",
+            "color": "#87909e",
+            "type": "open",
+            "orderindex": 0
+         },
+         "custom_type": null
+      },
+      "wid": "90131994467",
+      "user": {
+         "id": 150294543,
+         "username": "Bryan StCyr",
+         "email": "bstcyr229@gmail.com",
+         "color": "#000",
+         "initials": "BS",
+         "profilePicture": null
+      },
+      "billable": true,
+      "start": "1773933135196",
+      "end": "1773956535196",
+      "duration": "23400000",
+      "description": "",
+      "tags": [],
+      "source": "clickup",
+      "at": "1773956536535",
+      "is_locked": false,
+      "approval_id": null,
+      "task_location": {
+         "list_id": "901326488637",
+         "folder_id": "901317840051",
+         "space_id": "901313695040"
+      },
+      "task_url": "https://app.clickup.com/t/86agah929"
+   }
+]
