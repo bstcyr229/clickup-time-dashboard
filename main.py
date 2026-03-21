@@ -22,74 +22,51 @@ headers = {"Authorization": click_up_api_key}
 team_response = requests.get("https://api.clickup.com/api/v2/team", headers=headers)
 team_data = team_response.json().get("teams")
 
-user_groups = []
+rows = []
+user_group_dict = {}
 #Getting tasks and teams 
 for team in team_data:
     team_id = team["id"]
+    team_time_data_request = requests.get(f"https://api.clickup.com/api/v2/team/{team_id}/time_entries", headers=headers)
+    time_data =  team_time_data_request.json().get("data")
     team_ids_for_spaces = requests.get(f"https://api.clickup.com/api/v2/team/{team_id}/space", headers=headers)
     space_data = team_ids_for_spaces.json().get("spaces")
-    team_time_data_request = requests.get(f"https://api.clickup.com/api/v2/team/{team_id}/time_entries", headers=headers) 
-    time_data =  team_time_data_request.json().get("data")
     user_group_data = requests.get("https://api.clickup.com/api/v2/group",headers=headers, params = {"team_id":team_id})
     user_group_data_json = user_group_data.json().get("groups")
+    print(user_group_data_json)
+    for user_group in  user_group_data_json:
+        user_group_dict["team name"] = user_group["name"]
+        for memeber in user_group["members"]:
+            user_group_dict["members"] = user_group["id"]
+            print(user_group_dict)
+            for space in space_data:
+                space_id = space["id"]    
+                folder_ids_for_lists = requests.get(f"https://api.clickup.com/api/v2/space/{space_id}/folder", headers=headers )
+                folder_data = folder_ids_for_lists.json().get("folders")
+                #Getting folderless lists
+                folderless_lists = requests.get(f"https://api.clickup.com/api/v2/space/{space_id}/list",headers=headers)
+                folderless_lists_data = folderless_lists.json().get("lists")
+                for folder in folder_data:
+                    folder_id = folder["id"]            
+                    list_ids_for_tasks = requests.get(f"https://api.clickup.com/api/v2/folder/{folder_id}/list", headers=headers)
+                    #Combinging data from lists in folders and outside of folders
+                    list_data = list_ids_for_tasks.json().get("lists") +  folderless_lists_data
+                    for list in list_data:
+                        list_id = list["id"]
+                        task_ids = requests.get(f"https://api.clickup.com/api/v2/list/{list_id}/task",headers=headers)
+                        task_data = task_ids.json().get("tasks")
+                        for task in task_data:
+                            task_name = task['name']
+                            task_id = task['id']
+                                    
 
-    for groups in  user_group_data_json:
-        team_name = groups["name"]
-        group_id = groups["team_id"]
-        assignee = groups["members"][0]["username"]  
-        user_groups.append({
-                "team name": team_name,
-                "team id": group_id,
-                "assignee" : assignee
-    
-            })
-            
-    print(user_groups)
+                
 
 
-
-
-    # with open("time_data", "w") as f:
-    #     json.dump(time_data, f, indent=3)
-    #     print(time_data)      
-
-    # for space in space_data:
-    #     space_id = space["id"]    
-    #     folder_ids_for_lists = requests.get(f"https://api.clickup.com/api/v2/space/{space_id}/folder", headers=headers )
-    #     folder_data = folder_ids_for_lists.json().get("folders")
-    #     #Getting folderless lists
-    #     folderless_lists = requests.get(f"https://api.clickup.com/api/v2/space/{space_id}/list",headers=headers)
-    #     folderless_lists_data = folderless_lists.json().get("lists")
-    #     for folder in folder_data:
-    #         folder_id = folder["id"]            
-    #         list_ids_for_tasks = requests.get(f"https://api.clickup.com/api/v2/folder/{folder_id}/list", headers=headers)
-    #         #Combinging data from lists in folders and outside of folders
-    #         list_data = list_ids_for_tasks.json().get("lists") +  folderless_lists_data
-    #         for list in list_data:
-    #             list_id = list["id"]
-    #             task_ids = requests.get(f"https://api.clickup.com/api/v2/list/{list_id}/task",headers=headers)
-    #             task_data = task_ids.json().get("tasks")
-    #             # with open("first_task", "w") as f:
-    #             #     json.dump(first_task, f, indent=3)
-    #             #     print(first_task)        
-    #             # for task in task_data:
-    #             #     task_id = task["id"]
+                
 
 
         
-#Getting Assignees
-#for 
-            
-
-
-            
-        
-    
-#https://api.clickup.com/api/v2/list/{list_id}/task
-
-
-
-    
 
     
 
