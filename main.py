@@ -36,12 +36,11 @@ for team in team_data:
     space_data = team_ids_for_spaces.json().get("spaces")
     user_group_data = requests.get("https://api.clickup.com/api/v2/group",headers=headers, params = {"team_id":team_id})
     user_group_data_json = user_group_data.json().get("groups")
+    print(time_data[0])
     for user_group in  user_group_data_json:
-        for team_id in user_group_data_json:
-            user_group_dict[team_id["name"]] = team_id["team_id"]
             for member in user_group["members"]:
-                user_group_dict[member["id"]] = user_group["name"]
-                print(user_group_dict)       
+                user_group_dict[user_group["name"]] = [member["id"]]      
+                
                 for space in space_data:
                     space_id = space["id"]    
                     folder_ids_for_lists = requests.get(f"https://api.clickup.com/api/v2/space/{space_id}/folder", headers=headers )
@@ -58,7 +57,8 @@ for team in team_data:
                             list_id = list["id"]
                             task_ids = requests.get(f"https://api.clickup.com/api/v2/list/{list_id}/task",headers=headers)
                             task_data = task_ids.json().get("tasks")
-                            # print(task_data[0])
+                            print(task_data[0])
+                            
                             for task in task_data:
                                 task_name = task['name']
                                 task_id = task['id']
@@ -67,10 +67,11 @@ for team in team_data:
                                 rows["Task Name"] = task["name"]
                                 rows["Task Id"] = task["id"]
                                 rows["Time Estimated"] = task["time_estimate"] / milisecond_converter
-
+                                
                                 for assignees in task["assignees"]:     
-                                    rows[assignees["username"]] = task["id"]
-                                    # print(rows)
+                                    rows["User"] = assignees["username"]
+                                    rows["User Id"] = assignees["id"]
+                                    #print(rows)
                                     
                                         
 
