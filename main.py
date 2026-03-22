@@ -22,8 +22,11 @@ headers = {"Authorization": click_up_api_key}
 team_response = requests.get("https://api.clickup.com/api/v2/team", headers=headers)
 team_data = team_response.json().get("teams")
 
-rows = []
+rows = {}
 user_group_dict = {}
+list_of_tasks = []
+time_dict = {}
+milisecond_converter = 1000000
 #Getting tasks and teams 
 for team in team_data:
     team_id = team["id"]
@@ -33,32 +36,43 @@ for team in team_data:
     space_data = team_ids_for_spaces.json().get("spaces")
     user_group_data = requests.get("https://api.clickup.com/api/v2/group",headers=headers, params = {"team_id":team_id})
     user_group_data_json = user_group_data.json().get("groups")
-    print(user_group_data_json)
     for user_group in  user_group_data_json:
-        user_group_dict["team name"] = user_group["name"]
-        for memeber in user_group["members"]:
-            user_group_dict["members"] = user_group["id"]
-            print(user_group_dict)
-            for space in space_data:
-                space_id = space["id"]    
-                folder_ids_for_lists = requests.get(f"https://api.clickup.com/api/v2/space/{space_id}/folder", headers=headers )
-                folder_data = folder_ids_for_lists.json().get("folders")
-                #Getting folderless lists
-                folderless_lists = requests.get(f"https://api.clickup.com/api/v2/space/{space_id}/list",headers=headers)
-                folderless_lists_data = folderless_lists.json().get("lists")
-                for folder in folder_data:
-                    folder_id = folder["id"]            
-                    list_ids_for_tasks = requests.get(f"https://api.clickup.com/api/v2/folder/{folder_id}/list", headers=headers)
-                    #Combinging data from lists in folders and outside of folders
-                    list_data = list_ids_for_tasks.json().get("lists") +  folderless_lists_data
-                    for list in list_data:
-                        list_id = list["id"]
-                        task_ids = requests.get(f"https://api.clickup.com/api/v2/list/{list_id}/task",headers=headers)
-                        task_data = task_ids.json().get("tasks")
-                        for task in task_data:
-                            task_name = task['name']
-                            task_id = task['id']
+        for team_id in user_group_data_json:
+            user_group_dict[team_id["name"]] = team_id["team_id"]
+            for member in user_group["members"]:
+                user_group_dict[member["id"]] = user_group["name"]
+                print(user_group_dict)       
+                for space in space_data:
+                    space_id = space["id"]    
+                    folder_ids_for_lists = requests.get(f"https://api.clickup.com/api/v2/space/{space_id}/folder", headers=headers )
+                    folder_data = folder_ids_for_lists.json().get("folders")
+                    #Getting folderless lists
+                    folderless_lists = requests.get(f"https://api.clickup.com/api/v2/space/{space_id}/list",headers=headers)
+                    folderless_lists_data = folderless_lists.json().get("lists")
+                    for folder in folder_data:
+                        folder_id = folder["id"]            
+                        list_ids_for_tasks = requests.get(f"https://api.clickup.com/api/v2/folder/{folder_id}/list", headers=headers)
+                        #Combinging data from lists in folders and outside of folders
+                        list_data = list_ids_for_tasks.json().get("lists") +  folderless_lists_data
+                        for list in list_data:
+                            list_id = list["id"]
+                            task_ids = requests.get(f"https://api.clickup.com/api/v2/list/{list_id}/task",headers=headers)
+                            task_data = task_ids.json().get("tasks")
+                            # print(task_data[0])
+                            for task in task_data:
+                                task_name = task['name']
+                                task_id = task['id']
+                                time_tracked = ""
+                                billable_time = ""
+                                rows["Task Name"] = task["name"]
+                                rows["Task Id"] = task["id"]
+                                rows["Time Estimated"] = task["time_estimate"] / milisecond_converter
+
+                                for assignees in task["assignees"]:     
+                                    rows[assignees["username"]] = task["id"]
+                                    # print(rows)
                                     
+                                        
 
                 
 
