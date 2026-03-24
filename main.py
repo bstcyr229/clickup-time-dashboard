@@ -1,6 +1,7 @@
-#Which of your teams is over or under capacity right now
-#A deep dive on each of the members of your team, who is under capacity and who isn't
-#An analysis of individual tasks, time spent vs time estimated 
+# Summary of the Three Views
+#View One: Which of your teams is over or under capacity right now
+#View Two: A deep dive on each of the members of your team, who is under capacity and who isn't
+#View Three: An analysis of individual tasks, time spent vs time estimated 
 #ClickUp API documentation link https://developer.clickup.com/reference/gettimeentrieswithinadaterange
 
 from enum import member
@@ -22,10 +23,11 @@ headers = {"Authorization": click_up_api_key}
 team_response = requests.get("https://api.clickup.com/api/v2/team", headers=headers)
 team_data = team_response.json().get("teams")
 
-rows = {}
+task_dict = {}
 user_group_dict = {}
 time_dict = {}
 milisecond_converter = 1000000
+master_dictionary = {}
 #Getting tasks and teams 
 for team in team_data:
     team_id = team["id"]
@@ -35,9 +37,11 @@ for team in team_data:
     space_data = team_ids_for_spaces.json().get("spaces")
     user_group_data = requests.get("https://api.clickup.com/api/v2/group",headers=headers, params = {"team_id":team_id})
     user_group_data_json = user_group_data.json().get("groups")
-    #print(time_data[0])
-    
-    
+    print(user_group_data)
+
+    # for entry in user_group_data_json:
+    #     user_group_dict["Team Names"] = entry["id"]["name"]
+    #     print(user_group_dict[0]) 
     for entry in time_data:
 
         billable_time = 0
@@ -57,10 +61,11 @@ for team in team_data:
         time_dict["Task Id"] = entry["task"]["id"]
         time_dict["Assignee"] = entry["user"]["username"]
         time_dict["Assignee Id"] = entry["user"]["id"]
-        time_dict["Billable Time"] = (f'{billable_time} hours')
-        time_dict["Non-Billable Time"] = (f'{non_billable_time} hours')
+        time_dict["Billable Time"] = billable_time
+        time_dict["Non-Billable Time"] = non_billable_time
+        time_dict["Total Time"] = non_billable_time + billable_time 
 
-        print(time_dict)
+    
     for user_group in  user_group_data_json:
         for member in user_group["members"]:
             user_group_dict[user_group["name"]] = [member["id"]]      
@@ -80,17 +85,30 @@ for team in team_data:
                     list_id = list["id"]
                     task_ids = requests.get(f"https://api.clickup.com/api/v2/list/{list_id}/task",headers=headers)
                     task_data = task_ids.json().get("tasks")
+                    print(task_data[0])
                     for task in task_data:
-                        # task_name = task['name']
-                        # task_id = task['id']
-                        rows["Task Name"] = task["name"]
-                        rows["Task Id"] = task["id"]
-                        rows["Time Estimated"] = task["time_estimate"] / milisecond_converter           
+                        #master_dictionary["Team Name"] = user_group_dict["Team Name"]
+                        task_dict["Task Name"] = task["name"]
+                        task_dict["Task Id"] = task["id"]
+                        task_dict["Time Estimated"] = task["time_estimate"] / milisecond_converter           
                         for assignees in task["assignees"]:     
-                            rows["User"] = assignees["username"]
-                            rows["User Id"] = assignees["id"]
-                            #print(rows)
+                            task_dict["User"] = assignees["username"]
+                            task_dict["User Id"] = assignees["id"]
                             
+            master_dictionary = {
+                "Task Name" : task_dict["Task Name"],
+                "Task Id" : task_dict["Task Id"],
+                "User Name": task_dict["User"],
+                "User Id": task_dict["User Id"],
+                "Estimated Time": task_dict["Time Estimated"],
+                "Total Time": time_dict["Total Time"],
+                "Non-Billable Time" : time_dict["Non-Billable Time"],
+                "Billable Time" : time_dict["Billable Time"] 
+
+
+
+            }
+            #print(master_dictionary)             
                             
             
 
