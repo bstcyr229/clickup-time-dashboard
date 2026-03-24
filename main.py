@@ -26,8 +26,6 @@ rows = {}
 user_group_dict = {}
 time_dict = {}
 milisecond_converter = 1000000
-billable_time = ""
-non_billable_time = ""
 #Getting tasks and teams 
 for team in team_data:
     team_id = team["id"]
@@ -41,18 +39,26 @@ for team in team_data:
     
     
     for entry in time_data:
-        if entry["billable"] == "True":
+
+        billable_time = 0
+        non_billable_time = 0
+
+        if entry["billable"] == True:
             billable_time = entry["duration"]
-        elif entry["billable"] == "False":
-            non_billable_time = entry["duration"]
-        
-        
+            billable_time = int(billable_time)
+            billable_time = billable_time / milisecond_converter
+        elif entry["billable"] == False:
+            non_billable_time = entry["duration"]  
+            non_billable_time = int(non_billable_time)
+            non_billable_time = non_billable_time / milisecond_converter
+    
+
         time_dict["Task Name"] = entry["task"]["name"]
         time_dict["Task Id"] = entry["task"]["id"]
         time_dict["Assignee"] = entry["user"]["username"]
         time_dict["Assignee Id"] = entry["user"]["id"]
-        time_dict["Billable Time"] = billable_time 
-        time_dict["Non-Billable Time"] = non_billable_time
+        time_dict["Billable Time"] = (f'{billable_time} hours')
+        time_dict["Non-Billable Time"] = (f'{non_billable_time} hours')
 
         print(time_dict)
     for user_group in  user_group_data_json:
