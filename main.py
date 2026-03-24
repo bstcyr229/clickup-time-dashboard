@@ -4,7 +4,6 @@
 #View Three: An analysis of individual tasks, time spent vs time estimated 
 #ClickUp API documentation link https://developer.clickup.com/reference/gettimeentrieswithinadaterange
 
-from enum import member
 
 import dummy_data as gdd
 import pandas as pd
@@ -37,11 +36,12 @@ for team in team_data:
     space_data = team_ids_for_spaces.json().get("spaces")
     user_group_data = requests.get("https://api.clickup.com/api/v2/group",headers=headers, params = {"team_id":team_id})
     user_group_data_json = user_group_data.json().get("groups")
-    print(user_group_data)
+    print(user_group_data_json)
 
-    # for entry in user_group_data_json:
-    #     user_group_dict["Team Names"] = entry["id"]["name"]
-    #     print(user_group_dict[0]) 
+    for user_group in user_group_data_json:
+        for member in user_group["members"]:
+            user_group_dict[user_group["id"]] = user_group["name"]
+            print(user_group_dict)
     for entry in time_data:
 
         billable_time = 0
