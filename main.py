@@ -39,8 +39,9 @@ for team in team_data:
     print(user_group_data_json)
 
     for user_group in user_group_data_json:
+        user_group_dict[user_group["name"]] = []
         for member in user_group["members"]:
-            user_group_dict[user_group["id"]] = user_group["name"]
+            user_group_dict[user_group["name"]] = member["id"]
             print(user_group_dict)
     for entry in time_data:
 
