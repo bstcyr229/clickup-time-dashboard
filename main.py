@@ -26,7 +26,7 @@ task_dict = {}
 user_group_dict = {}
 time_dict = {}
 milisecond_converter = 1000000
-master_dictionary = {}
+master_dictionary = []
 #Getting tasks and teams 
 for team in team_data:
     team_id = team["id"]
@@ -36,14 +36,13 @@ for team in team_data:
     space_data = team_ids_for_spaces.json().get("spaces")
     user_group_data = requests.get("https://api.clickup.com/api/v2/group",headers=headers, params = {"team_id":team_id})
     user_group_data_json = user_group_data.json().get("groups")
-    print(user_group_data_json)
 
     for user_group in user_group_data_json:
-        user_group_dict[user_group["name"]] = []
         for member in user_group["members"]:
-            user_group_dict[user_group["name"]] = member["id"]
-            print(user_group_dict)
+            user_group_dict[member["id"]] = user_group["name"]
+            
     for entry in time_data:
+        print(time_dict)
 
         billable_time = 0
         non_billable_time = 0
@@ -66,10 +65,6 @@ for team in team_data:
         time_dict["Non-Billable Time"] = non_billable_time
         time_dict["Total Time"] = non_billable_time + billable_time 
 
-    
-    for user_group in  user_group_data_json:
-        for member in user_group["members"]:
-            user_group_dict[user_group["name"]] = [member["id"]]      
         for space in space_data:
             space_id = space["id"]    
             folder_ids_for_lists = requests.get(f"https://api.clickup.com/api/v2/space/{space_id}/folder", headers=headers )
@@ -86,30 +81,30 @@ for team in team_data:
                     list_id = list["id"]
                     task_ids = requests.get(f"https://api.clickup.com/api/v2/list/{list_id}/task",headers=headers)
                     task_data = task_ids.json().get("tasks")
-                    print(task_data[0])
                     for task in task_data:
-                        #master_dictionary["Team Name"] = user_group_dict["Team Name"]
+                        
                         task_dict["Task Name"] = task["name"]
                         task_dict["Task Id"] = task["id"]
                         task_dict["Time Estimated"] = task["time_estimate"] / milisecond_converter           
                         for assignees in task["assignees"]:     
                             task_dict["User"] = assignees["username"]
                             task_dict["User Id"] = assignees["id"]
+                            task_dict["User Team"] = user_group_dict[member["id"]]
+                            #print(task_dict)
                             
-            master_dictionary = {
-                "Task Name" : task_dict["Task Name"],
-                "Task Id" : task_dict["Task Id"],
-                "User Name": task_dict["User"],
-                "User Id": task_dict["User Id"],
-                "Estimated Time": task_dict["Time Estimated"],
-                "Total Time": time_dict["Total Time"],
-                "Non-Billable Time" : time_dict["Non-Billable Time"],
-                "Billable Time" : time_dict["Billable Time"] 
+        master_dictionary.append({
+            "Task Name" : task_dict["Task Name"].unique(),
+            "Task Id" : task_dict["Task Id"],
+            "User Name": task_dict["User"],
+            "User Id": task_dict["User Id"],
+            "Estimated Time": task_dict["Time Estimated"],
+            "Total Time": time_dict["Total Time"],
+            "Non-Billable Time" : time_dict["Non-Billable Time"],
+            "Billable Time" : time_dict["Billable Time"] 
 
 
 
-            }
-            #print(master_dictionary)             
+            })         
                             
             
 
