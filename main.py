@@ -42,42 +42,7 @@ for team in team_data:
     
     for user_group in user_group_data_json:
         for member in user_group["members"]:
-            user_group_dict[member["username"]] = user_group["name"]
-    user_group_df =  pd.DataFrame(user_group_dict)
-    print(user_group_df)
-    for entry in time_data:
-
-        billable_time = 0
-        non_billable_time = 0
-        date = 0
-
-        if entry["billable"] == True:
-            billable_time = entry["duration"]
-            billable_time = int(billable_time)
-            billable_time = billable_time / milisecond_converter
-        elif entry["billable"] == False:
-            non_billable_time = entry["duration"]  
-            non_billable_time = int(non_billable_time)
-            non_billable_time = non_billable_time / milisecond_converter
-
-        date_to_seconds = (int(entry["at"])/unix_converter) #converting entry to seconds
-        dt_object = dt.fromtimestamp(date_to_seconds) #putting seconds into date time object
-        just_the_date = dt_object.date().isoformat()    # manipulating dt object to get the just the date in iso format 
-        
-
-        
-
-        
-
-        time_dict["Task Name"] = entry["task"]["name"]
-        time_dict["Task Id"] = entry["task"]["id"]
-        time_dict["Assignee"] = entry["user"]["username"]
-        time_dict["Assignee Id"] = entry["user"]["id"]
-        time_dict["Billable Time"] = billable_time
-        time_dict["Non-Billable Time"] = non_billable_time
-        time_dict["Total Time"] = non_billable_time + billable_time 
-        time_dict["Date"] = just_the_date
-        
+            user_group_dict[member["username"]] = user_group["name"]     
         
         for space in space_data:
             space_id = space["id"]    
@@ -96,29 +61,69 @@ for team in team_data:
                     task_ids = requests.get(f"https://api.clickup.com/api/v2/list/{list_id}/task",headers=headers)
                     task_data = task_ids.json().get("tasks")
                     for task in task_data:
+                        for entry in time_data:
+                            billable_time = 0
+                            non_billable_time = 0
+                            date = 0
+
+                            if entry["billable"] == True:
+                                billable_time = entry["duration"]
+                                billable_time = int(billable_time)
+                                billable_time = billable_time / milisecond_converter
+                            elif entry["billable"] == False:
+                                non_billable_time = entry["duration"]  
+                                non_billable_time = int(non_billable_time)
+                                non_billable_time = non_billable_time / milisecond_converter
+                            
+                            date_to_seconds = (int(entry["at"])/unix_converter) #converting entry to seconds
+                            dt_object = dt.fromtimestamp(date_to_seconds) #putting seconds into date time object
+                            just_the_date = dt_object.date().isoformat()    # manipulating dt object to get the just the date in iso format 
+
+                            time_dict["Task Name"] = entry["task"]["name"]
+                            time_dict["Task Id"] = entry["task"]["id"]
+                            time_dict["Assignee"] = entry["user"]["username"]
+                            time_dict["Assignee Id"] = entry["user"]["id"]
+                            time_dict["Billable Time"] = billable_time
+                            time_dict["Non-Billable Time"] = non_billable_time
+                            time_dict["Total Time"] = non_billable_time + billable_time 
+                            time_dict["Date"] = just_the_date
+                                
+        
+
+                            
+                    
+                            if entry["task"]["id"] == task["id"]:
+                                task_dict["Task Name"] = task["name"]
+                                task_dict["Task Id"] = task["id"]
+                                task_dict["Time Estimated"] = task["time_estimate"] / milisecond_converter
+                                time_dict["Billable Time"] = billable_time
+                                time_dict["Non-Billable Time"] = non_billable_time
+                                time_dict["Total Time"] = non_billable_time + billable_time            
+                            print(task_dict)
+
+
+            
                         
-                        task_dict["Task Name"] = task["name"]
-                        task_dict["Task Id"] = task["id"]
-                        task_dict["Time Estimated"] = task["time_estimate"] / milisecond_converter           
                         for assignees in task["assignees"]:     
                             task_dict["User"] = assignees["username"]
                             task_dict["User Id"] = assignees["id"]
                             task_dict["User Team"] = user_group_dict[member["username"]]
                             
-        master_dictionary.append({
-            "Task Name" : time_dict["Task Name"],
-            "Task Id" : time_dict["Task Id"],
-            "User Name": time_dict["Assignee"],
-            "User Id": time_dict["Assignee Id"], 
-            "User Team":task_dict["User Team"],
-            "Estimated Time": task_dict["Time Estimated"],
-            "Total Time": time_dict["Total Time"],
-            "Non-Billable Time" : time_dict["Non-Billable Time"],
-            "Billable Time" : time_dict["Billable Time"] 
-            })
+                            # master_dictionary.append({
+                            #     "User Name":task_dict["Assignee"],
+                            #     "User Id": task_dict["Assignee Id"], 
+                            #     "User Team":task_dict["User Team"],
+                            #     "Task Name" : task_dict["Task Name"],
+                            #     "Task Id" : time_dict["Task Id"],
+                            #     "Estimated Time": task_dict["Time Estimated"],
+                            #     "Total Time": time_dict["Total Time"],
+                            #     "Non-Billable Time" : time_dict["Non-Billable Time"],
+                            #     "Billable Time" : time_dict["Billable Time"]
+                            #         })
         
+                    
     df = pd.DataFrame(master_dictionary)
-    print(user_group_dict)
+    print(df)
 #def view_one():
     # team_members = master_dictionary.groupby("Team")["assignee"].unique()
     # print(team_members)
@@ -324,4 +329,3 @@ for team in team_data:
 #     view_three()
 # else: 
 #     st.write("You selected:", genre)
-
