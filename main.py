@@ -13,6 +13,7 @@ import requests
 import os
 import json 
 from datetime import datetime as dt 
+from datetime import timedelta
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -28,7 +29,7 @@ user_group_dict = {}
 time_dict = {}
 
 master_dictionary = []
-milisecond_converter = 1000000
+milisecond_converter = 3600000
 unix_converter = 1000
 #Getting tasks and teams 
 for team in team_data:
@@ -87,57 +88,75 @@ for team in team_data:
                             time_dict["Non-Billable Time"] = non_billable_time
                             time_dict["Total Time"] = non_billable_time + billable_time 
                             time_dict["Date"] = just_the_date
+                            
+                            
                                 
-        
 
+
+                            if entry["task"]["id"] == task["id"]: 
+                                master_dictionary.append({
+                                "Task Name" : task["name"],
+                                "Task Id": task["id"],
+                                "assignee":entry["user"]["username"],
+                                "User Id": entry["user"]["id"],
+                                "Team":user_group_dict[entry["user"]["username"]],
+                                "estimated_hours": int(task["time_estimate"]/milisecond_converter),
+                                "actual_hours" : time_dict["Non-Billable Time"],
+                                "billable_hours" : time_dict["Billable Time"],
+                                "Total Time" :time_dict["Total Time"]  ,
+                                "Date": time_dict["Date"]
+                                    })
+                        if entry["task"]["id"] != task["id"]:
+                            master_dictionary.append({
+                                "assignee" : task["name"],
+                                "Task Id": task["id"],
+                                "User Name":entry["user"]["username"],
+                                "User Id": entry["user"]["id"],
+                                "Team":user_group_dict[entry["user"]["username"]],
+                                "estimated_hours": int(task["time_estimate"]/milisecond_converter),
+                                "actual_hours" : 0,
+                                "billable_hours" : 0,
+                                "Total Time" :0,
+                                
+                                    })
                             
-                    
-                            if entry["task"]["id"] == task["id"]:
-                                task_dict["Task Name"] = task["name"]
-                                task_dict["Task Id"] = task["id"]
-                                task_dict["Time Estimated"] = task["time_estimate"] / milisecond_converter
-                                time_dict["Billable Time"] = billable_time
-                                time_dict["Non-Billable Time"] = non_billable_time
-                                time_dict["Total Time"] = non_billable_time + billable_time            
-                            print(task_dict)
-
-
-            
-                        
-                        for assignees in task["assignees"]:     
-                            task_dict["User"] = assignees["username"]
-                            task_dict["User Id"] = assignees["id"]
-                            task_dict["User Team"] = user_group_dict[member["username"]]
-                            
-                            # master_dictionary.append({
-                            #     "User Name":task_dict["Assignee"],
-                            #     "User Id": task_dict["Assignee Id"], 
-                            #     "User Team":task_dict["User Team"],
-                            #     "Task Name" : task_dict["Task Name"],
-                            #     "Task Id" : time_dict["Task Id"],
-                            #     "Estimated Time": task_dict["Time Estimated"],
-                            #     "Total Time": time_dict["Total Time"],
-                            #     "Non-Billable Time" : time_dict["Non-Billable Time"],
-                            #     "Billable Time" : time_dict["Billable Time"]
-                            #         })
         
-                    
-    df = pd.DataFrame(master_dictionary)
-    print(df)
-#def view_one():
-    # team_members = master_dictionary.groupby("Team")["assignee"].unique()
-    # print(team_members)
-    # team_members_number = team_members.apply(len)
-    # team_estimated_hours_worked = dummy_data_keys.groupby("Team")["estimated_hours"].sum()
-    # team_actual_hours_worked = dummy_data_keys.groupby("Team")["actual_hours"].sum()
-    # team_billable_hours = dummy_data_keys.groupby("Team")["billable_hours"].sum()
-    # total_hours = team_members_number * 40
-    # over_capacity = total_hours < team_actual_hours_worked
-    # over_capacity_percentage = round(((team_actual_hours_worked / total_hours ) * 100) - 100 )
-    # team_register_hours = dummy_data_keys.groupby("Team")["actual_hours"].sum()
+    #print(master_dictionary)               
+    #df = pd.DataFrame(master_dictionary)
+    #just_the_date = dt_object.date().isoformat()
+today = dt.today().weekday()
+end_of_the_week = 6
+if  today.weekday() != 0:
+    start_of_week = timedelta(0)
+
+if today == 6:
+    end_of_week = today
+else:
+    end_of_week = (today - timedelta(6))
+#print(start_of_week)
+print(end_of_week.date().isoformat())
+
+
+
+def view_one():
+    today = dt.today()
     
-    # days = dummy_data_keys.groupby("Team")["day"].agg(list)
-    
+    start_of_week = (today - timedelta(0))
+    end_of_week = today - timedelta(6)
+    # if df["Date"] > start_of_week or df["Date"] < end_of_week:
+    #     team_members = df.groupby("Team")["assignee"].unique()
+    #     team_members_number = team_members.apply(len)
+    #     team_estimated_hours_worked = df.groupby("Team")["estimated_hours"].sum()
+    #     team_actual_hours_worked = df.groupby("Team")["actual_hours"].sum()
+    #     team_billable_hours = df.groupby("Team")["billable_hours"].sum()
+        
+        # total_hours = team_members_number * 40
+        # over_capacity = total_hours < team_actual_hours_worked
+        # over_capacity_percentage = round(((team_actual_hours_worked / total_hours ) * 100) - 100 )
+        # team_register_hours = dummy_data_keys.groupby("Team")["actual_hours"].sum()
+        
+        # days = dummy_data_keys.groupby("Team")["day"].agg(list)
+        
 
     
 #     col1, col2, col3 = st.columns(3)
