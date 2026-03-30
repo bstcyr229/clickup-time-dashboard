@@ -61,11 +61,23 @@ for team in team_data:
                     list_id = list["id"]
                     task_ids = requests.get(f"https://api.clickup.com/api/v2/list/{list_id}/task",headers=headers)
                     task_data = task_ids.json().get("tasks")
+                    print(task_data[0])
                     for task in task_data:
                         for entry in time_data:
-                            billable_time = 0
-                            non_billable_time = 0
-                            date = 0
+                            if task["id"] != entry["task"]["id"]:
+                                pass
+                                # time_dict["Task Name"] = task["name"]
+                                # time_dict["Task Id"] = task["id"]
+                                # time_dict["Assignee"] = task["assignees"]["username"]
+                                # time_dict["Assignee Id"] = task["assignees"]["id"]
+                                # time_dict["Billable Time"] = 0
+                                # time_dict["Non-Billable Time"] = 0
+                                # time_dict["Total Time"] = 0 
+                                # time_dict["Date"] = just_the_date
+                                
+                            # billable_time = 0
+                            # non_billable_time = 0
+                            # date = 0
 
                             if entry["billable"] == True:
                                 billable_time = entry["duration"]
@@ -80,56 +92,55 @@ for team in team_data:
                             dt_object = dt.fromtimestamp(date_to_seconds) #putting seconds into date time object
                             just_the_date = dt_object.date().isoformat()    # manipulating dt object to get the just the date in iso format 
 
-                            time_dict["Task Name"] = entry["task"]["name"]
-                            time_dict["Task Id"] = entry["task"]["id"]
-                            time_dict["Assignee"] = entry["user"]["username"]
-                            time_dict["Assignee Id"] = entry["user"]["id"]
-                            time_dict["Billable Time"] = billable_time
-                            time_dict["Non-Billable Time"] = non_billable_time
-                            time_dict["Total Time"] = non_billable_time + billable_time 
-                            time_dict["Date"] = just_the_date
+                            # time_dict["Task Name"] = entry["task"]["name"]
+                            # time_dict["Task Id"] = entry["task"]["id"]
+                            # time_dict["Assignee"] = entry["user"]["username"]
+                            # time_dict["Assignee Id"] = entry["user"]["id"]
+                            # time_dict["Billable Time"] = billable_time
+                            # time_dict["Non-Billable Time"] = non_billable_time
+                            # time_dict["Total Time"] = non_billable_time + billable_time 
+                            # time_dict["Date"] = just_the_date
                             
                             
                                 
 
 
-                            if entry["task"]["id"] == task["id"]: 
-                                master_dictionary.append({
-                                "Task Name" : task["name"],
-                                "Task Id": task["id"],
-                                "assignee":entry["user"]["username"],
-                                "User Id": entry["user"]["id"],
-                                "Team":user_group_dict[entry["user"]["username"]],
-                                "estimated_hours": int(task["time_estimate"]/milisecond_converter),
-                                "actual_hours" : time_dict["Non-Billable Time"],
-                                "billable_hours" : time_dict["Billable Time"],
-                                "Total Time" :time_dict["Total Time"]  ,
-                                "Date": time_dict["Date"]
-                                    })
-                        if entry["task"]["id"] != task["id"]:
-                            master_dictionary.append({
-                                "assignee" : task["name"],
-                                "Task Id": task["id"],
-                                "User Name":entry["user"]["username"],
-                                "User Id": entry["user"]["id"],
-                                "Team":user_group_dict[entry["user"]["username"]],
-                                "estimated_hours": int(task["time_estimate"]/milisecond_converter),
-                                "actual_hours" : 0,
-                                "billable_hours" : 0,
-                                "Total Time" :0,
+                            # if entry["task"]["id"] == task["id"]: 
+                            #     master_dictionary.append({
+                            #     "Task Name" : task["name"],
+                            #     "Task Id": task["id"],
+                            #     "assignee":entry["user"]["username"],
+                            #     "User Id": entry["user"]["id"],
+                            #     "Team":user_group_dict[entry["user"]["username"]],
+                            #     "estimated_hours": int(task["time_estimate"]/milisecond_converter),
+                            #     "actual_hours" : time_dict["Non-Billable Time"],
+                            #     "billable_hours" : time_dict["Billable Time"],
+                            #     "Total Time" :time_dict["Total Time"]  ,
+                            #     "Date": time_dict["Date"]
+                            #         })
+                            # elif entry["task"]["id"] != task["id"]:
+                            #     master_dictionary.append({
+                            #         "assignee" : task["name"],
+                            #         "Task Id": task["id"],
+                            #         "User Name":entry["user"]["username"],
+                            #         "User Id": entry["user"]["id"],
+                            #         "Team":user_group_dict[entry["user"]["username"]],
+                            #         "estimated_hours": int(task["time_estimate"]/milisecond_converter),
+                            #         "actual_hours" : 0,
+                            #         "billable_hours" : 0,
+                            #         "Total Time" :0,
 
+                                    
+                            #             })
                                 
-                                    })
-                            
         
-df = pd.DataFrame(master_dictionary)
+#main_dataframe = pd.DataFrame(master_dictionary)
+#print(main_dataframe["Date"])
 today = dt.today().date()
-start_of_week = today - timedelta( days=(7-today.weekday()))
-end_of_week = today + timedelta(days=(6 - today.weekday() - 7))
-print(start_of_week)
-print(end_of_week)
+start_of_last_week = today - timedelta( days=(7-today.weekday()))
+end_of_last_week = today + timedelta(days=(6 - today.weekday() - 7))
 
-#print(type(df["Date"]))
+
 
 
 def view_one():
