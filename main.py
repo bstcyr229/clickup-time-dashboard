@@ -117,32 +117,24 @@ for team in team_data:
                                 "actual_hours" : 0,
                                 "billable_hours" : 0,
                                 "Total Time" :0,
+
                                 
                                     })
                             
         
-    #print(master_dictionary)               
-    #df = pd.DataFrame(master_dictionary)
-    #just_the_date = dt_object.date().isoformat()
-today = dt.today().weekday()
-end_of_the_week = 6
-if  today.weekday() != 0:
-    start_of_week = timedelta(0)
+df = pd.DataFrame(master_dictionary)
+today = dt.today().date()
+start_of_week = today - timedelta( days=(7-today.weekday()))
+end_of_week = today + timedelta(days=(6 - today.weekday() - 7))
+print(start_of_week)
+print(end_of_week)
 
-if today == 6:
-    end_of_week = today
-else:
-    end_of_week = (today - timedelta(6))
-#print(start_of_week)
-print(end_of_week.date().isoformat())
-
+#print(type(df["Date"]))
 
 
 def view_one():
-    today = dt.today()
-    
-    start_of_week = (today - timedelta(0))
-    end_of_week = today - timedelta(6)
+    pass 
+
     # if df["Date"] > start_of_week or df["Date"] < end_of_week:
     #     team_members = df.groupby("Team")["assignee"].unique()
     #     team_members_number = team_members.apply(len)
