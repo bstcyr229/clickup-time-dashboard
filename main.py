@@ -31,6 +31,10 @@ time_dict = {}
 master_dictionary = []
 milisecond_converter = 3600000
 unix_converter = 1000
+
+
+
+
 #Getting tasks and teams 
 for team in team_data:
     team_id = team["id"]
@@ -44,7 +48,7 @@ for team in team_data:
     for user_group in user_group_data_json:
         for member in user_group["members"]:
             user_group_dict[member["username"]] = user_group["name"]     
-        
+            
         for space in space_data:
             space_id = space["id"]    
             folder_ids_for_lists = requests.get(f"https://api.clickup.com/api/v2/space/{space_id}/folder", headers=headers )
@@ -61,52 +65,58 @@ for team in team_data:
                     list_id = list["id"]
                     task_ids = requests.get(f"https://api.clickup.com/api/v2/list/{list_id}/task",headers=headers)
                     task_data = task_ids.json().get("tasks")
+                    
                     print(task_data[0])
                     for task in task_data:
+                        date_to_seconds_for_tasks_no_hours = (int(task["start_date"])/unix_converter)
+                        dt_object_for_tasks_no_hours = dt.fromtimestamp(date_to_seconds_for_tasks_no_hours)
+                        date_for_task_no_hours = dt_object_for_tasks_no_hours.date().isoformat() 
+                        
+                        time_spent = task.get("time_spent")
+
+                        time_dict["Task Name"] = task["name"]
+                        time_dict["Task Id"] = task["id"]
+                        # time_dict["Assignee"] = task["assignees"]["username"]
+                        # time_dict["Assignee Id"] = task["assignees"]["id"]
+                        # time_dict["Team"] = user_group_dict[member["username"]]["name"]
+                        if time_spent == None:
+                            time_dict["Billable Time"] = 0
+                            time_dict["Non-Billable Time"] = 0
+                            time_dict["Total Time"] = 0 
+                            #time_dict["Date"] = date_for_task_no_hours
                         for entry in time_data:
-                            if task["id"] != entry["task"]["id"]:
-                                pass
-                                # time_dict["Task Name"] = task["name"]
-                                # time_dict["Task Id"] = task["id"]
-                                # time_dict["Assignee"] = task["assignees"]["username"]
-                                # time_dict["Assignee Id"] = task["assignees"]["id"]
-                                # time_dict["Billable Time"] = 0
-                                # time_dict["Non-Billable Time"] = 0
-                                # time_dict["Total Time"] = 0 
-                                # time_dict["Date"] = just_the_date
-                                
-                            # billable_time = 0
-                            # non_billable_time = 0
-                            # date = 0
+                            if entry["task"]["id"] == task["id"]:
+                                billable_time = 0
+                                non_billable_time = 0
+                                date = 0
 
-                            if entry["billable"] == True:
-                                billable_time = entry["duration"]
-                                billable_time = int(billable_time)
-                                billable_time = billable_time / milisecond_converter
-                            elif entry["billable"] == False:
-                                non_billable_time = entry["duration"]  
-                                non_billable_time = int(non_billable_time)
-                                non_billable_time = non_billable_time / milisecond_converter
-                            
-                            date_to_seconds = (int(entry["at"])/unix_converter) #converting entry to seconds
-                            dt_object = dt.fromtimestamp(date_to_seconds) #putting seconds into date time object
-                            just_the_date = dt_object.date().isoformat()    # manipulating dt object to get the just the date in iso format 
-
-                            # time_dict["Task Name"] = entry["task"]["name"]
-                            # time_dict["Task Id"] = entry["task"]["id"]
-                            # time_dict["Assignee"] = entry["user"]["username"]
-                            # time_dict["Assignee Id"] = entry["user"]["id"]
-                            # time_dict["Billable Time"] = billable_time
-                            # time_dict["Non-Billable Time"] = non_billable_time
-                            # time_dict["Total Time"] = non_billable_time + billable_time 
-                            # time_dict["Date"] = just_the_date
-                            
-                            
+                                date_to_seconds_for_logged_hours = (int(entry["at"])/unix_converter) #converting entry to seconds
+                                dt_object_for_logged_hours = dt.fromtimestamp(date_to_seconds_for_logged_hours) #putting seconds into date time object
+                                date_for_logged_hours = dt_object_for_logged_hours.date().isoformat()    # manipulating dt object to get the just the date in iso format 
                                 
 
+                                if entry["billable"] == True:
+                                    billable_time = entry["duration"]
+                                    billable_time = int(billable_time)
+                                    billable_time = billable_time / milisecond_converter
+                                elif entry["billable"] == False:
+                                    non_billable_time = entry["duration"]  
+                                    non_billable_time = int(non_billable_time)
+                                    non_billable_time = non_billable_time / milisecond_converter
+                                
+                                
+                                time_dict["Task Name"] = entry["task"]["name"]
+                                time_dict["Task Id"] = entry["task"]["id"]
+                                time_dict["Assignee"] = entry["user"]["username"]
+                                time_dict["Assignee Id"] = entry["user"]["id"]
+                                time_dict["Billable Time"] = billable_time
+                                time_dict["Non-Billable Time"] = non_billable_time
+                                time_dict["Total Time"] = non_billable_time + billable_time 
+                                time_dict["Date"] = date_for_logged_hours
+                                                                
+                        print(time_dict)
 
-                            # if entry["task"]["id"] == task["id"]: 
-                            #     master_dictionary.append({
+                            # master_dictionary.append({
                             #     "Task Name" : task["name"],
                             #     "Task Id": task["id"],
                             #     "assignee":entry["user"]["username"],
@@ -118,20 +128,6 @@ for team in team_data:
                             #     "Total Time" :time_dict["Total Time"]  ,
                             #     "Date": time_dict["Date"]
                             #         })
-                            # elif entry["task"]["id"] != task["id"]:
-                            #     master_dictionary.append({
-                            #         "assignee" : task["name"],
-                            #         "Task Id": task["id"],
-                            #         "User Name":entry["user"]["username"],
-                            #         "User Id": entry["user"]["id"],
-                            #         "Team":user_group_dict[entry["user"]["username"]],
-                            #         "estimated_hours": int(task["time_estimate"]/milisecond_converter),
-                            #         "actual_hours" : 0,
-                            #         "billable_hours" : 0,
-                            #         "Total Time" :0,
-
-                                    
-                            #             })
                                 
         
 #main_dataframe = pd.DataFrame(master_dictionary)
