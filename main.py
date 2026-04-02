@@ -95,6 +95,7 @@ for team in team_data:
                                 "start_date" : date_to_seconds_for_tasks_no_hours,
                                 "actual_time" : 0, 
                                 "billable_time": 0,
+                                "total_time": 0
                             }
                             
 
@@ -103,6 +104,8 @@ for team in team_data:
                                 total_billable_time = 0
                                 total_non_billable_time = 0
                                 date = 0
+                                billable_time_for_entries = 0 
+                                non_billable_time_for_entries = 0
 
                                 date_to_seconds_for_logged_hours = (int(entry["at"])/unix_converter) #converting entry to seconds
                                 dt_object_for_logged_hours = dt.fromtimestamp(date_to_seconds_for_logged_hours) #putting seconds into date time object
@@ -112,11 +115,25 @@ for team in team_data:
                                 if entry["billable"] == True:
                                     total_billable_time += int(entry["duration"])                   
                                     total_billable_time = total_billable_time / milisecond_converter
+                                    master_task_list[task_id] = {
+                                "actual_time" : total_billable_time, 
+                            }
+                            
+
+                                    
+                                    billable_time_for_entries = int(entry["duration"])
+                                    billable_time_for_entries = billable_time_for_entries / milisecond_converter
+
                                 elif entry["billable"] == False:
                                     total_non_billable_time += int(entry["duration"])  
                                     total_non_billable_time = int(total_non_billable_time)
                                     total_non_billable_time = total_non_billable_time / milisecond_converter
-                                
+                                    master_task_list[task_id] = {
+                                "billable_time" : total_non_billable_time, 
+                            }
+                            
+                                    non_billable_time_for_entries = int(entry["duration"])
+                                    non_billable_time_for_entries = non_billable_time_for_entries / milisecond_converter
                                 
                                 time_dict["Task Name"] = entry["task"]["name"]
                                 time_dict["Task Id"] = entry["task"]["id"]
@@ -125,8 +142,15 @@ for team in team_data:
                                 time_dict["Total Billable Time"] =total_billable_time
                                 time_dict["Total Non-Billable Time"] = total_non_billable_time
                                 time_dict["Total Time"] = total_non_billable_time + total_billable_time 
-                                time_dict["Date"] = date_for_logged_hours                           
-
+                                
+                                entry_dict["Task Id"] = entry["task"]["name"]
+                                entry_dict["Assignee"] = entry["user"]["username"]
+                                entry_dict["Assignee Id"] = entry["user"]["id"]
+                                entry_dict["Date"] = date_for_logged_hours   
+                                entry_dict["Billable"] = billable_time_for_entries
+                                entry_dict["Non-Billable"] =  non_billable_time_for_entries
+                                entry_dict["Total Time"] =  non_billable_time_for_entries + billable_time_for_entries
+                            print(master_task_list)
                             # master_dictionary.append({
                             #     "Task Name" : task["name"],
                             #     "Task Id": task["id"],
