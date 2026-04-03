@@ -31,7 +31,7 @@ master_task_list = {}
 entry_dict = {}
 
 
-master_dictionary = []
+master_dictionary = {}
 milisecond_converter = 3600000
 unix_converter = 1000
 
@@ -84,21 +84,6 @@ for team in team_data:
                         else:
                             date_for_task_no_hours = "No date logged"
 
-
-
-                            master_task_list[task_id] = {
-                                "task_name": task["name"],
-                                "estimate": task.get("time_estimate",0),
-                                "actual": actual_time_logged,
-                                "billable":billable_time_logged,
-                                "assginee":task.get("assignees",[{}][0].get("username", "Unassigned")),
-                                "start_date" : date_to_seconds_for_tasks_no_hours,
-                                "actual_time" : 0, 
-                                "billable_time": 0,
-                                "total_time": 0
-                            }
-                            
-
                         for entry in time_data:
                             if entry["task"]["id"] == task["id"]:
                                 total_billable_time = 0
@@ -150,10 +135,10 @@ for team in team_data:
                                 entry_dict["Billable"] = billable_time_for_entries
                                 entry_dict["Non-Billable"] =  non_billable_time_for_entries
                                 entry_dict["Total Time"] =  non_billable_time_for_entries + billable_time_for_entries
-                            print(master_task_list)
-                            # master_dictionary.append({
+                            
+                            print(entry_dict)
+                            # `master_dictionary.append({
                             #     "Task Name" : task["name"],
-                            #     "Task Id": task["id"],
                             #     "assignee":entry["user"]["username"],
                             #     "User Id": entry["user"]["id"],
                             #     "Team":user_group_dict[entry["user"]["username"]],
@@ -161,8 +146,12 @@ for team in team_data:
                             #     "actual_hours" : time_dict["Non-Billable Time"],
                             #     "billable_hours" : time_dict["Billable Time"],
                             #     "Total Time" :time_dict["Total Time"]  ,
-                            #     "Date": time_dict["Date"]
-                            #         })
+                            #     "Entries":[]})
+                            # master_dictionary["Entries"].append({
+
+                            # }) `
+                            
+                            
                                 
         
 #main_dataframe = pd.DataFrame(master_dictionary)
