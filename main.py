@@ -27,8 +27,9 @@ team_data = team_response.json().get("teams")
 task_dict = {}
 user_group_dict = {}
 time_dict = {}
-master_task_list = {}
 entry_dict = {}
+master_task_list = []
+entry_list = []
 
 
 master_dictionary = {}
@@ -68,7 +69,7 @@ for team in team_data:
                     list_id = list["id"]
                     task_ids = requests.get(f"https://api.clickup.com/api/v2/list/{list_id}/task",headers=headers)
                     task_data = task_ids.json().get("tasks")
-
+                    print(task_data[0])
                     for task in task_data:
                         time_spent = task.get("time_spent")
 
@@ -76,19 +77,29 @@ for team in team_data:
                         estimated_time = task_dict 
                         actual_time_logged = 0
                         billable_time_logged = 0 
+                        date_for_task_dict = 0
+
                         
+
                         if task["start_date"] != None:
-                            date_to_seconds_for_tasks_no_hours = (int(task["start_date"])/unix_converter)
-                            dt_object_for_tasks_no_hours = dt.fromtimestamp(date_to_seconds_for_tasks_no_hours)
-                            date_for_task_no_hours = dt_object_for_tasks_no_hours.date().isoformat() 
+                            start_date_to_seconds_for_tasks_no_hours = (int(task["start_date"])/unix_converter)
+                            dt_object_for_tasks_no_hours = dt.fromtimestamp(start_date_to_seconds_for_tasks_no_hours)
+                            start_date_for_task_dict = dt_object_for_tasks_no_hours.date().isoformat() 
                         else:
-                            date_for_task_no_hours = "No date logged"
+                            start_date_for_task_dict = None
+                        # if task["start_date"] != None:
+                        #     start_date_to_seconds_for_tasks_no_hours = (int(task["start_date"])/unix_converter)
+                        #     dt_object_for_tasks_no_hours = dt.fromtimestamp(start_date_to_seconds_for_tasks_no_hours)
+                        #     start_date_for_task_dict = dt_object_for_tasks_no_hours.date().isoformat() 
+                        # else:
+                        #     start_date_for_task_dict = None
+
 
                         for entry in time_data:
                             if entry["task"]["id"] == task["id"]:
                                 total_billable_time = 0
                                 total_non_billable_time = 0
-                                date = 0
+                                date_for_logged_hours = "No Date Listed"
                                 billable_time_for_entries = 0 
                                 non_billable_time_for_entries = 0
 
@@ -128,34 +139,38 @@ for team in team_data:
                                 time_dict["Total Non-Billable Time"] = total_non_billable_time
                                 time_dict["Total Time"] = total_non_billable_time + total_billable_time 
                                 
-                                entry_dict["Task Id"] = entry["task"]["name"]
+                                entry_dict["Task Name"] = entry["task"]["name"]
+                                entry_dict["Task Id"] = entry["task"]["id"]
                                 entry_dict["Assignee"] = entry["user"]["username"]
                                 entry_dict["Assignee Id"] = entry["user"]["id"]
+                                entry_dict["Team"]= user_group_dict[entry["user"]["username"]]
                                 entry_dict["Date"] = date_for_logged_hours   
                                 entry_dict["Billable"] = billable_time_for_entries
                                 entry_dict["Non-Billable"] =  non_billable_time_for_entries
                                 entry_dict["Total Time"] =  non_billable_time_for_entries + billable_time_for_entries
                             
-                            print(entry_dict)
-                            # `master_dictionary.append({
-                            #     "Task Name" : task["name"],
-                            #     "assignee":entry["user"]["username"],
-                            #     "User Id": entry["user"]["id"],
-                            #     "Team":user_group_dict[entry["user"]["username"]],
-                            #     "estimated_hours": int(task["time_estimate"]/milisecond_converter),
-                            #     "actual_hours" : time_dict["Non-Billable Time"],
-                            #     "billable_hours" : time_dict["Billable Time"],
-                            #     "Total Time" :time_dict["Total Time"]  ,
-                            #     "Entries":[]})
-                            # master_dictionary["Entries"].append({
+                            master_task_list.append({
+                                "Task Name" : task["name"],
+                                "assignee":task["user"]["username"],
+                                "User Id": task["user"]["id"],
+                                "Team":user_group_dict[entry["user"]["username"]],
+                                #"Start Date":
+                                "estimated_hours": int(task["time_estimate"]/milisecond_converter),
+                                "actual_hours" : time_dict["Non-Billable Time"],
+                                "billable_hours" : time_dict["Billable Time"],
+                                "Total Time" :time_dict["Total Time"]  
+                                })
+                            entry_list.append({
 
-                            # }) `
+                            })
+                            
                             
                             
                                 
         
-#main_dataframe = pd.DataFrame(master_dictionary)
-#print(main_dataframe["Date"])
+#task_dataframe = pd.DataFrame(master_task_list)
+entries_dataframe = pd.DataFrame(entry_dict)
+
 today = dt.today().date()
 start_of_last_week = today - timedelta( days=(7-today.weekday()))
 end_of_last_week = today + timedelta(days=(6 - today.weekday() - 7))
@@ -165,8 +180,6 @@ end_of_last_week = today + timedelta(days=(6 - today.weekday() - 7))
 
 def view_one():
     pass 
-
-    # if df["Date"] > start_of_week or df["Date"] < end_of_week:
     #     team_members = df.groupby("Team")["assignee"].unique()
     #     team_members_number = team_members.apply(len)
     #     team_estimated_hours_worked = df.groupby("Team")["estimated_hours"].sum()
