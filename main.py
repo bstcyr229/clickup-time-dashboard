@@ -69,7 +69,6 @@ for team in team_data:
                     list_id = list["id"]
                     task_ids = requests.get(f"https://api.clickup.com/api/v2/list/{list_id}/task",headers=headers)
                     task_data = task_ids.json().get("tasks")
-                    print(task_data[0])
                     for task in task_data:
                         time_spent = task.get("time_spent")
 
@@ -95,13 +94,13 @@ for team in team_data:
                         else:
                             due_date_for_task_dict = None
                         
+                        
                         task_dict["Task Name"] = task["name"]
                         task_dict["Task Id"] = task["id"]
-                        # task_dict["Assignee"] = task["user"]["username"]
-                        # task_dict["Assignee Id"] = task["user"]["id"]
+                        task_dict["Assignee"] = task["assignees"][0]["username"]
+                        task_dict["Assignee Id"] = task["assignees"][0]["id"]
                         task_dict["Start Date"] = start_date_for_task_dict
                         task_dict["Due Date"] = due_date_for_task_dict
-
                         for entry in time_data:
                             if entry["task"]["id"] == task["id"]:
                                 date_for_logged_hours = "No Date Listed"
@@ -165,29 +164,29 @@ for team in team_data:
                             #     "billable_hours" : time_dict["Billable Time"],
                             #     "Total Time" :time_dict["Total Time"]  
                             #     })
-                            entry_list.append({
-                                "Task Name":  entry_dict["Task Name"], 
-                                "Task Id" : entry_dict["Task Id"],
-                                "Assignee": entry_dict["Assignee"],
-                                "Assignee Id": entry_dict["Assignee Id"],
-                                "Team": entry_dict["Team"], 
-                                "Date": entry_dict["Date"],    
-                                "Billable": entry_dict["Billable"],
-                                "Non-Billable": entry_dict["Non-Billable"],
-                                "Total Time": entry_dict["Total Time"] 
-                            })
+                                entry_list.append({
+                                    "Task Name":  entry_dict["Task Name"], 
+                                    "Task Id" : entry_dict["Task Id"],
+                                    "Assignee": entry_dict["Assignee"],
+                                    "Assignee Id": entry_dict["Assignee Id"],
+                                    "Team": entry_dict["Team"], 
+                                    "Date": entry_dict["Date"],    
+                                    "Billable": entry_dict["Billable"],
+                                    "Non-Billable": entry_dict["Non-Billable"],
+                                    "Total Time": entry_dict["Total Time"] 
+                                })
                             
                             
                             
                                 
         
-#task_dataframe = pd.DataFrame(master_task_list)
-entries_dataframe = pd.DataFrame(entry_dict)
+# #task_dataframe = pd.DataFrame(master_task_list)
+# entries_dataframe = pd.DataFrame(entry_dict)
 
-today = dt.today().date()
-start_of_last_week = today - timedelta( days=(7-today.weekday()))
-end_of_last_week = today + timedelta(days=(6 - today.weekday() - 7))
-print(end_of_last_week)
+# today = dt.today().date()
+# start_of_last_week = today - timedelta( days=(7-today.weekday()))
+# end_of_last_week = today + timedelta(days=(6 - today.weekday() - 7))
+# print(end_of_last_week)
 
 
 
