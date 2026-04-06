@@ -78,7 +78,8 @@ for team in team_data:
                         actual_time_logged = 0
                         billable_time_logged = 0 
                         date_for_task_dict = 0
-
+                        total_billable_time = 0
+                        total_non_billable_time = 0
                         
 
                         if task["start_date"] != None:
@@ -87,18 +88,22 @@ for team in team_data:
                             start_date_for_task_dict = dt_object_for_tasks_no_hours.date().isoformat() 
                         else:
                             start_date_for_task_dict = None
-                        # if task["start_date"] != None:
-                        #     start_date_to_seconds_for_tasks_no_hours = (int(task["start_date"])/unix_converter)
-                        #     dt_object_for_tasks_no_hours = dt.fromtimestamp(start_date_to_seconds_for_tasks_no_hours)
-                        #     start_date_for_task_dict = dt_object_for_tasks_no_hours.date().isoformat() 
-                        # else:
-                        #     start_date_for_task_dict = None
-
+                        if task["due_date"] != None:
+                            start_date_to_seconds_for_tasks_no_hours = (int(task["due_date"])/unix_converter)
+                            dt_object_for_tasks_no_hours = dt.fromtimestamp(start_date_to_seconds_for_tasks_no_hours)
+                            due_date_for_task_dict = dt_object_for_tasks_no_hours.date().isoformat() 
+                        else:
+                            due_date_for_task_dict = None
+                        
+                        task_dict["Task Name"] = task["name"]
+                        task_dict["Task Id"] = task["id"]
+                        # task_dict["Assignee"] = task["user"]["username"]
+                        # task_dict["Assignee Id"] = task["user"]["id"]
+                        task_dict["Start Date"] = start_date_for_task_dict
+                        task_dict["Due Date"] = due_date_for_task_dict
 
                         for entry in time_data:
                             if entry["task"]["id"] == task["id"]:
-                                total_billable_time = 0
-                                total_non_billable_time = 0
                                 date_for_logged_hours = "No Date Listed"
                                 billable_time_for_entries = 0 
                                 non_billable_time_for_entries = 0
@@ -111,7 +116,7 @@ for team in team_data:
                                 if entry["billable"] == True:
                                     total_billable_time += int(entry["duration"])                   
                                     total_billable_time = total_billable_time / milisecond_converter
-                                    master_task_list[task_id] = {
+                                    master_task_list = {
                                 "actual_time" : total_billable_time, 
                             }
                             
@@ -124,7 +129,7 @@ for team in team_data:
                                     total_non_billable_time += int(entry["duration"])  
                                     total_non_billable_time = int(total_non_billable_time)
                                     total_non_billable_time = total_non_billable_time / milisecond_converter
-                                    master_task_list[task_id] = {
+                                    master_task_list = {
                                 "billable_time" : total_non_billable_time, 
                             }
                             
@@ -149,19 +154,27 @@ for team in team_data:
                                 entry_dict["Non-Billable"] =  non_billable_time_for_entries
                                 entry_dict["Total Time"] =  non_billable_time_for_entries + billable_time_for_entries
                             
-                            master_task_list.append({
-                                "Task Name" : task["name"],
-                                "assignee":task["user"]["username"],
-                                "User Id": task["user"]["id"],
-                                "Team":user_group_dict[entry["user"]["username"]],
-                                #"Start Date":
-                                "estimated_hours": int(task["time_estimate"]/milisecond_converter),
-                                "actual_hours" : time_dict["Non-Billable Time"],
-                                "billable_hours" : time_dict["Billable Time"],
-                                "Total Time" :time_dict["Total Time"]  
-                                })
+                            # master_task_list.append({
+                            #     "Task Name" : task["name"],
+                            #     "assignee":task["assignees"]["username"],
+                            #     "User Id": task["user"]["id"],
+                            #     "Team":user_group_dict[entry["user"]["username"]],
+                            #     #"Start Date":
+                            #     "estimated_hours": int(task["time_estimate"]/milisecond_converter),
+                            #     "actual_hours" : time_dict["Non-Billable Time"],
+                            #     "billable_hours" : time_dict["Billable Time"],
+                            #     "Total Time" :time_dict["Total Time"]  
+                            #     })
                             entry_list.append({
-
+                                "Task Name":  entry_dict["Task Name"], 
+                                "Task Id" : entry_dict["Task Id"],
+                                "Assignee": entry_dict["Assignee"],
+                                "Assignee Id": entry_dict["Assignee Id"],
+                                "Team": entry_dict["Team"], 
+                                "Date": entry_dict["Date"],    
+                                "Billable": entry_dict["Billable"],
+                                "Non-Billable": entry_dict["Non-Billable"],
+                                "Total Time": entry_dict["Total Time"] 
                             })
                             
                             
@@ -174,6 +187,7 @@ entries_dataframe = pd.DataFrame(entry_dict)
 today = dt.today().date()
 start_of_last_week = today - timedelta( days=(7-today.weekday()))
 end_of_last_week = today + timedelta(days=(6 - today.weekday() - 7))
+print(end_of_last_week)
 
 
 
