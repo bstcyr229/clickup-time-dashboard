@@ -70,8 +70,7 @@ for team in team_data:
                     task_ids = requests.get(f"https://api.clickup.com/api/v2/list/{list_id}/task",headers=headers)
                     task_data = task_ids.json().get("tasks")
                     for task in task_data:
-                        time_spent = task.get("time_spent")
-
+                        
                         task_id = task["id"]
                         estimated_time = task_dict 
                         actual_time_logged = 0
@@ -101,11 +100,26 @@ for team in team_data:
                         task_dict["Assignee Id"] = task["assignees"][0]["id"]
                         task_dict["Start Date"] = start_date_for_task_dict
                         task_dict["Due Date"] = due_date_for_task_dict
+                        task_dict["Entries"] = []
+                        
                         for entry in time_data:
                             if entry["task"]["id"] == task["id"]:
                                 date_for_logged_hours = "No Date Listed"
                                 billable_time_for_entries = 0 
                                 non_billable_time_for_entries = 0
+
+
+
+
+
+                                entry_dict["Task Id"] = entry["task"]["id"]
+                                entry_dict["Assignee"] = entry["user"]["username"]
+                                entry_dict["Assignee Id"] = entry["user"]["id"]
+                                entry_dict["Team"]= user_group_dict[entry["user"]["username"]]
+
+
+
+
 
                                 date_to_seconds_for_logged_hours = (int(entry["at"])/unix_converter) #converting entry to seconds
                                 dt_object_for_logged_hours = dt.fromtimestamp(date_to_seconds_for_logged_hours) #putting seconds into date time object
@@ -135,19 +149,7 @@ for team in team_data:
                                     non_billable_time_for_entries = int(entry["duration"])
                                     non_billable_time_for_entries = non_billable_time_for_entries / milisecond_converter
                                 
-                                time_dict["Task Name"] = entry["task"]["name"]
-                                time_dict["Task Id"] = entry["task"]["id"]
-                                time_dict["Assignee"] = entry["user"]["username"]
-                                time_dict["Assignee Id"] = entry["user"]["id"]
-                                time_dict["Total Billable Time"] =total_billable_time
-                                time_dict["Total Non-Billable Time"] = total_non_billable_time
-                                time_dict["Total Time"] = total_non_billable_time + total_billable_time 
                                 
-                                entry_dict["Task Name"] = entry["task"]["name"]
-                                entry_dict["Task Id"] = entry["task"]["id"]
-                                entry_dict["Assignee"] = entry["user"]["username"]
-                                entry_dict["Assignee Id"] = entry["user"]["id"]
-                                entry_dict["Team"]= user_group_dict[entry["user"]["username"]]
                                 entry_dict["Date"] = date_for_logged_hours   
                                 entry_dict["Billable"] = billable_time_for_entries
                                 entry_dict["Non-Billable"] =  non_billable_time_for_entries
