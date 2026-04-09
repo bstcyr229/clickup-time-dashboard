@@ -101,41 +101,47 @@ for team in team_data:
                         task_dict["Start Date"] = start_date_for_task_dict
                         task_dict["Due Date"] = due_date_for_task_dict
                         task_dict["Entries"] = []
+                    
                         
-                        billable_time_for_entries = 0 
+                        billable_time_for_entries = 0
                         non_billable_time_for_entries = 0
                         entry_date = 0
                         for entry in time_data:
                             if entry["task"]["id"] == task["id"]:
-                                entry_date = dt.fromtimestamp(int(entry["at"])/ unix_converter).date().isoformat()
+                                entry_date = dt.fromtimestamp(int(entry["at"])/ unix_converter).date().isoformat()    
                                 
-                                if entry["billable"] == True:
+                            if entry["billable"] == True:
                                     billable_time_for_entries = int(entry["duration"])
                                     billable_time_for_entries = billable_time_for_entries / milisecond_converter
-                                elif entry["billable"] == False:
+                                    print(billable_time_for_entries)
+                            elif entry["billable"] == False:
                                     non_billable_time_for_entries = int(entry["duration"])
                                     non_billable_time_for_entries = non_billable_time_for_entries / milisecond_converter
                                 
-                                total_billable_time += billable_time_for_entries
-                                total_billable_time += non_billable_time_for_entries
+                            total_billable_time += billable_time_for_entries
+                            total_billable_time += non_billable_time_for_entries
                             
+                            entry_date = dt.fromtimestamp(int(entry["at"])/ unix_converter).date().isoformat()
                             team_member = entry["user"]["username"]
                             team_member_id = entry["user"]["id"]
                             team_member_team = user_group_dict[entry["user"]["username"]]
 
+                            
                             task_dict["Entries"].append({
+                                "Task Name": task["name"],
+                                "Task Id":task["id"], 
+                                "Team Member" : team_member,
+                                "Team Member Id" : team_member_id,
+                                "Team": team_member_team,
                                 "Date":entry_date, 
                                 "Billable": billable_time_for_entries,
                                 "Non-Billable": non_billable_time_for_entries,
-                                "Team Member" : team_member,
-                                "Team Member Id" : team_member_id,
-                                "Team": team_member_team
-                            })
-                            print(task_dict["Entries"])
-        
-# #task_dataframe = pd.DataFrame(master_task_list)
-# entries_dataframe = pd.DataFrame(entry_dict)
 
+                                
+                            })
+        
+entries_dataframe = pd.DataFrame(task_dict["Entries"])
+print(entries_dataframe)
 # today = dt.today().date()
 # start_of_last_week = today - timedelta( days=(7-today.weekday()))
 # end_of_last_week = today + timedelta(days=(6 - today.weekday() - 7))
