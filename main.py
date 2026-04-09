@@ -96,91 +96,42 @@ for team in team_data:
                         
                         task_dict["Task Name"] = task["name"]
                         task_dict["Task Id"] = task["id"]
-                        task_dict["Assignee"] = task["assignees"][0]["username"]
+                        task_dict["Task Assignee"] = task["assignees"][0]["username"]
                         task_dict["Assignee Id"] = task["assignees"][0]["id"]
                         task_dict["Start Date"] = start_date_for_task_dict
                         task_dict["Due Date"] = due_date_for_task_dict
                         task_dict["Entries"] = []
                         
+                        billable_time_for_entries = 0 
+                        non_billable_time_for_entries = 0
+                        entry_date = 0
                         for entry in time_data:
                             if entry["task"]["id"] == task["id"]:
-                                date_for_logged_hours = "No Date Listed"
-                                billable_time_for_entries = 0 
-                                non_billable_time_for_entries = 0
-
-
-
-
-
-                                entry_dict["Task Id"] = entry["task"]["id"]
-                                entry_dict["Assignee"] = entry["user"]["username"]
-                                entry_dict["Assignee Id"] = entry["user"]["id"]
-                                entry_dict["Team"]= user_group_dict[entry["user"]["username"]]
-
-
-
-
-
-                                date_to_seconds_for_logged_hours = (int(entry["at"])/unix_converter) #converting entry to seconds
-                                dt_object_for_logged_hours = dt.fromtimestamp(date_to_seconds_for_logged_hours) #putting seconds into date time object
-                                date_for_logged_hours = dt_object_for_logged_hours.date().isoformat()    # manipulating dt object to get the just the date in iso format 
+                                entry_date = dt.fromtimestamp(int(entry["at"])/ unix_converter).date().isoformat()
                                 
-
                                 if entry["billable"] == True:
-                                    total_billable_time += int(entry["duration"])                   
-                                    total_billable_time = total_billable_time / milisecond_converter
-                                    master_task_list = {
-                                "actual_time" : total_billable_time, 
-                            }
-                            
-
-                                    
                                     billable_time_for_entries = int(entry["duration"])
                                     billable_time_for_entries = billable_time_for_entries / milisecond_converter
-
                                 elif entry["billable"] == False:
-                                    total_non_billable_time += int(entry["duration"])  
-                                    total_non_billable_time = int(total_non_billable_time)
-                                    total_non_billable_time = total_non_billable_time / milisecond_converter
-                                    master_task_list = {
-                                "billable_time" : total_non_billable_time, 
-                            }
-                            
                                     non_billable_time_for_entries = int(entry["duration"])
                                     non_billable_time_for_entries = non_billable_time_for_entries / milisecond_converter
                                 
-                                
-                                entry_dict["Date"] = date_for_logged_hours   
-                                entry_dict["Billable"] = billable_time_for_entries
-                                entry_dict["Non-Billable"] =  non_billable_time_for_entries
-                                entry_dict["Total Time"] =  non_billable_time_for_entries + billable_time_for_entries
+                                total_billable_time += billable_time_for_entries
+                                total_billable_time += non_billable_time_for_entries
                             
-                            # master_task_list.append({
-                            #     "Task Name" : task["name"],
-                            #     "assignee":task["assignees"]["username"],
-                            #     "User Id": task["user"]["id"],
-                            #     "Team":user_group_dict[entry["user"]["username"]],
-                            #     #"Start Date":
-                            #     "estimated_hours": int(task["time_estimate"]/milisecond_converter),
-                            #     "actual_hours" : time_dict["Non-Billable Time"],
-                            #     "billable_hours" : time_dict["Billable Time"],
-                            #     "Total Time" :time_dict["Total Time"]  
-                            #     })
-                                entry_list.append({
-                                    "Task Name":  entry_dict["Task Name"], 
-                                    "Task Id" : entry_dict["Task Id"],
-                                    "Assignee": entry_dict["Assignee"],
-                                    "Assignee Id": entry_dict["Assignee Id"],
-                                    "Team": entry_dict["Team"], 
-                                    "Date": entry_dict["Date"],    
-                                    "Billable": entry_dict["Billable"],
-                                    "Non-Billable": entry_dict["Non-Billable"],
-                                    "Total Time": entry_dict["Total Time"] 
-                                })
-                            
-                            
-                            
-                                
+                            team_member = entry["user"]["username"]
+                            team_member_id = entry["user"]["id"]
+                            team_member_team = user_group_dict[entry["user"]["username"]]
+
+                            task_dict["Entries"].append({
+                                "Date":entry_date, 
+                                "Billable": billable_time_for_entries,
+                                "Non-Billable": non_billable_time_for_entries,
+                                "Team Member" : team_member,
+                                "Team Member Id" : team_member_id,
+                                "Team": team_member_team
+                            })
+                            print(task_dict["Entries"])
         
 # #task_dataframe = pd.DataFrame(master_task_list)
 # entries_dataframe = pd.DataFrame(entry_dict)
@@ -190,7 +141,7 @@ for team in team_data:
 # end_of_last_week = today + timedelta(days=(6 - today.weekday() - 7))
 # print(end_of_last_week)
 
-
+                                
 
 
 def view_one():
