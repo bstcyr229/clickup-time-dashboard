@@ -24,6 +24,7 @@ headers = {"Authorization": click_up_api_key}
 team_response = requests.get("https://api.clickup.com/api/v2/team", headers=headers)
 team_data = team_response.json().get("teams")
 
+tasks = []
 task_dict = {}
 user_group_dict = {}
 time_dict = {}
@@ -31,8 +32,6 @@ entry_dict = {}
 master_task_list = []
 entry_list = []
 
-
-master_dictionary = {}
 milisecond_converter = 3600000
 unix_converter = 1000
 
@@ -53,95 +52,126 @@ for team in team_data:
         for member in user_group["members"]:
             user_group_dict[member["username"]] = user_group["name"]     
             
-        for space in space_data:
-            space_id = space["id"]    
-            folder_ids_for_lists = requests.get(f"https://api.clickup.com/api/v2/space/{space_id}/folder", headers=headers )
-            folder_data = folder_ids_for_lists.json().get("folders")
-            #Getting folderless lists
-            folderless_lists = requests.get(f"https://api.clickup.com/api/v2/space/{space_id}/list",headers=headers)
-            folderless_lists_data = folderless_lists.json().get("lists")
-            for folder in folder_data:
-                folder_id = folder["id"]            
-                list_ids_for_tasks = requests.get(f"https://api.clickup.com/api/v2/folder/{folder_id}/list", headers=headers)
-                #Combinging data from lists in folders and outside of folders
-                list_data = list_ids_for_tasks.json().get("lists") +  folderless_lists_data
-                for list in list_data:
-                    list_id = list["id"]
-                    task_ids = requests.get(f"https://api.clickup.com/api/v2/list/{list_id}/task",headers=headers)
-                    task_data = task_ids.json().get("tasks")
-                    for task in task_data:
-                        
-                        task_id = task["id"]
-                        estimated_time = task_dict 
-                        actual_time_logged = 0
-                        billable_time_logged = 0 
-                        date_for_task_dict = 0
-                        total_billable_time = 0
-                        total_non_billable_time = 0
-                        
-
-                        if task["start_date"] != None:
-                            start_date_to_seconds_for_tasks_no_hours = (int(task["start_date"])/unix_converter)
-                            dt_object_for_tasks_no_hours = dt.fromtimestamp(start_date_to_seconds_for_tasks_no_hours)
-                            start_date_for_task_dict = dt_object_for_tasks_no_hours.date().isoformat() 
-                        else:
-                            start_date_for_task_dict = None
-                        if task["due_date"] != None:
-                            start_date_to_seconds_for_tasks_no_hours = (int(task["due_date"])/unix_converter)
-                            dt_object_for_tasks_no_hours = dt.fromtimestamp(start_date_to_seconds_for_tasks_no_hours)
-                            due_date_for_task_dict = dt_object_for_tasks_no_hours.date().isoformat() 
-                        else:
-                            due_date_for_task_dict = None
-                        
+    for space in space_data:
+        space_id = space["id"]    
+        folder_ids_for_lists = requests.get(f"https://api.clickup.com/api/v2/space/{space_id}/folder", headers=headers )
+        folder_data = folder_ids_for_lists.json().get("folders")
+        #Getting folderless lists
+        folderless_lists = requests.get(f"https://api.clickup.com/api/v2/space/{space_id}/list",headers=headers)
+        folderless_lists_data = folderless_lists.json().get("lists")
+        for folder in folder_data:
+            folder_id = folder["id"]            
+            list_ids_for_tasks = requests.get(f"https://api.clickup.com/api/v2/folder/{folder_id}/list", headers=headers)
+            #Combinging data from lists in folders and outside of folders
+            list_data = list_ids_for_tasks.json().get("lists") +  folderless_lists_data
+            for list in list_data:
+                list_id = list["id"]
+                task_ids = requests.get(f"https://api.clickup.com/api/v2/list/{list_id}/task",headers=headers)
+                task_data = task_ids.json().get("tasks")
+                print(task_data[0])
+                for task in task_data: 
+                    task_id = task["id"]
+                    estimated_time = 0 
+                    actual_time_logged = 0
+                    billable_time_logged = 0 
+                    date_for_task_dict = 0
+                    total_billable_time = 0
+                    total_non_billable_time = 0
+                            
+                    if task["time_estimate"] != None:
+                        estimated_time = task["time_estimate"]
+                    else:
+                        estimated_time = 0
+                    if task["start_date"] != None:
+                        start_date_to_seconds_for_tasks_no_hours = (int(task["start_date"])/unix_converter)
+                        dt_object_for_tasks_no_hours = dt.fromtimestamp(start_date_to_seconds_for_tasks_no_hours)
+                        start_date_for_task_dict = dt_object_for_tasks_no_hours.date().isoformat() 
+                    else:
+                        start_date_for_task_dict = None
+                    if task["due_date"] != None:
+                        start_date_to_seconds_for_tasks_no_hours = (int(task["due_date"])/unix_converter)
+                        dt_object_for_tasks_no_hours = dt.fromtimestamp(start_date_to_seconds_for_tasks_no_hours)
+                        due_date_for_task_dict = dt_object_for_tasks_no_hours.date().isoformat() 
+                    else:
+                        due_date_for_task_dict = None
+                            
+                    if task["assignees"] == []:
+                        task_dict["Task Assignee"] = "No user assigned"
+                        task_dict["Assignee Id"] = "No user ID"                            
+                    else: 
+                        task_dict["Task Assignee"] = task["assignees"][0]["username"]
+                        task_dict["Assignee Id"] = task["assignees"][0]["id"]
+                    
                         
                         task_dict["Task Name"] = task["name"]
                         task_dict["Task Id"] = task["id"]
-                        task_dict["Task Assignee"] = task["assignees"][0]["username"]
-                        task_dict["Assignee Id"] = task["assignees"][0]["id"]
                         task_dict["Start Date"] = start_date_for_task_dict
                         task_dict["Due Date"] = due_date_for_task_dict
                         task_dict["Entries"] = []
-                    
                         
                         billable_time_for_entries = 0
                         non_billable_time_for_entries = 0
                         entry_date = 0
-                        for entry in time_data:
+                            
+                        tasks.append({
+                        "Task Name" : task["name"],
+                        "Task Id" : task["id"],
+                        "Start Date" : start_date_for_task_dict,
+                        "Due Date" : due_date_for_task_dict,
+                        "Entries" : task_dict["Entries"],
+
+                        })
+                        
+                        for entry in time_data:                
                             if entry["task"]["id"] == task["id"]:
                                 entry_date = dt.fromtimestamp(int(entry["at"])/ unix_converter).date().isoformat()    
-                                
-                            if entry["billable"] == True:
+                                        
+                                if entry["billable"] == True:
                                     billable_time_for_entries = int(entry["duration"])
                                     billable_time_for_entries = billable_time_for_entries / milisecond_converter
-                                    print(billable_time_for_entries)
-                            elif entry["billable"] == False:
+                                elif entry["billable"] == False:
                                     non_billable_time_for_entries = int(entry["duration"])
                                     non_billable_time_for_entries = non_billable_time_for_entries / milisecond_converter
-                                
-                            total_billable_time += billable_time_for_entries
-                            total_billable_time += non_billable_time_for_entries
-                            
-                            entry_date = dt.fromtimestamp(int(entry["at"])/ unix_converter).date().isoformat()
-                            team_member = entry["user"]["username"]
-                            team_member_id = entry["user"]["id"]
-                            team_member_team = user_group_dict[entry["user"]["username"]]
-
-                            
-                            task_dict["Entries"].append({
-                                "Task Name": task["name"],
-                                "Task Id":task["id"], 
-                                "Team Member" : team_member,
-                                "Team Member Id" : team_member_id,
-                                "Team": team_member_team,
-                                "Date":entry_date, 
-                                "Billable": billable_time_for_entries,
-                                "Non-Billable": non_billable_time_for_entries,
+                                        
+                                total_billable_time += billable_time_for_entries
+                                total_billable_time += non_billable_time_for_entries
+                                    
+                                entry_date = dt.fromtimestamp(int(entry["at"])/ unix_converter).date().isoformat()
+                                team_member = entry["user"]["username"]
+                                team_member_id = entry["user"]["id"]
+                                team_member_team = user_group_dict[entry["user"]["username"]]
 
                                 
-                            })
+                                task_dict["Entries"].append({
+                                    "Task Name": task["name"],
+                                    "Task Id":task["id"], 
+                                    "Team Member" : team_member,
+                                    "Team Member Id" : team_member_id,
+                                    "Team": team_member_team,
+                                    "Date":entry_date, 
+                                    "Billable": billable_time_for_entries,
+                                    "Non-Billable": non_billable_time_for_entries,
+                                    "Total Time": billable_time_for_entries + non_billable_time_for_entries
+
+
+                                    
+                                })
+                                entry_list.append({
+                                    "Task Name": task["name"],
+                                    "Task Id":task["id"], 
+                                    "Team Member" : team_member,
+                                    "Team Member Id" : team_member_id,
+                                    "Team": team_member_team,
+                                    "Date":entry_date, 
+                                    "Billable": billable_time_for_entries,
+                                    "Non-Billable": non_billable_time_for_entries,
+                                    "Total Time": billable_time_for_entries + non_billable_time_for_entries
+
+                                    
+                                })
         
-entries_dataframe = pd.DataFrame(task_dict["Entries"])
-print(entries_dataframe)
+entries_dataframe = pd.DataFrame(entry_list)
+
 # today = dt.today().date()
 # start_of_last_week = today - timedelta( days=(7-today.weekday()))
 # end_of_last_week = today + timedelta(days=(6 - today.weekday() - 7))
