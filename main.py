@@ -68,7 +68,6 @@ for team in team_data:
                 list_id = list["id"]
                 task_ids = requests.get(f"https://api.clickup.com/api/v2/list/{list_id}/task",headers=headers)
                 task_data = task_ids.json().get("tasks")
-                print(task_data[0])
                 for task in task_data: 
                     task_id = task["id"]
                     estimated_time = 0 
@@ -111,6 +110,7 @@ for team in team_data:
                         
                         billable_time_for_entries = 0
                         non_billable_time_for_entries = 0
+                        total_time_from_entries = 0 
                         entry_date = 0
                             
                         tasks.append({
@@ -118,6 +118,9 @@ for team in team_data:
                         "Task Id" : task["id"],
                         "Start Date" : start_date_for_task_dict,
                         "Due Date" : due_date_for_task_dict,
+                        "Time Estimate": estimated_time,
+                        "Task Assignee" : task_dict["Task Assignee"],
+                        "Assignee Id" : task_dict["Assignee Id"],
                         "Entries" : task_dict["Entries"],
 
                         })
@@ -134,8 +137,9 @@ for team in team_data:
                                     non_billable_time_for_entries = non_billable_time_for_entries / milisecond_converter
                                         
                                 total_billable_time += billable_time_for_entries
-                                total_billable_time += non_billable_time_for_entries
-                                    
+                                total_non_billable_time += non_billable_time_for_entries
+                                total_time = total_billable_time + total_non_billable_time
+                                
                                 entry_date = dt.fromtimestamp(int(entry["at"])/ unix_converter).date().isoformat()
                                 team_member = entry["user"]["username"]
                                 team_member_id = entry["user"]["id"]
@@ -159,7 +163,7 @@ for team in team_data:
                                 entry_list.append({
                                     "Task Name": task["name"],
                                     "Task Id":task["id"], 
-                                    "Team Member" : team_member,
+                                    "Assignee" : team_member,
                                     "Team Member Id" : team_member_id,
                                     "Team": team_member_team,
                                     "Date":entry_date, 
@@ -170,25 +174,29 @@ for team in team_data:
                                     
                                 })
         
-entries_dataframe = pd.DataFrame(entry_list)
+entries_df = pd.DataFrame(entry_list)
+task_df = pd.DataFrame(tasks)
+today = dt.today().date()
 
-# today = dt.today().date()
-# start_of_last_week = today - timedelta( days=(7-today.weekday()))
-# end_of_last_week = today + timedelta(days=(6 - today.weekday() - 7))
-# print(end_of_last_week)
-
-                                
+start_of_last_week = today - timedelta( days=(9-today.weekday()))
+end_of_last_week = today + timedelta(days=(6 - today.weekday() - 7))
 
 
-def view_one():
-    pass 
-    #     team_members = df.groupby("Team")["assignee"].unique()
-    #     team_members_number = team_members.apply(len)
-    #     team_estimated_hours_worked = df.groupby("Team")["estimated_hours"].sum()
-    #     team_actual_hours_worked = df.groupby("Team")["actual_hours"].sum()
-    #     team_billable_hours = df.groupby("Team")["billable_hours"].sum()
+team_members = entries_df.groupby("Team")["Assignee"].unique()
+team_members_number = team_members.apply(len)
+team_estimated_hours_worked =  task_df.groupby("Team")["estimated_hours"].sum()
+team_actual_hours_worked = entries_df.groupby("Team")["actual_hours"].sum()
+team_billable_hours = entries_df.groupby("Team")["billable_hours"].sum()
         
-        # total_hours = team_members_number * 40
+print(team_members)
+
+def view_one(): 
+        team_members = entries_df.groupby("Team")["assignee"].unique()
+        team_estimated_hours_worked =  task_df.groupby("Team")["estimated_hours"].sum()
+        team_actual_hours_worked = entries_df.groupby("Team")["actual_hours"].sum()
+        team_billable_hours = entries_df.groupby("Team")["billable_hours"].sum()
+        
+        total_hours = team_members.apply(len) * 40
         # over_capacity = total_hours < team_actual_hours_worked
         # over_capacity_percentage = round(((team_actual_hours_worked / total_hours ) * 100) - 100 )
         # team_register_hours = dummy_data_keys.groupby("Team")["actual_hours"].sum()
