@@ -173,6 +173,11 @@ for team in team_data:
 
                                     
                                 })
+                                tasks.append({
+                                    "Billable" : total_billable_time,
+                                    "Non-Billable":total_non_billable_time,
+                                    "Total Time": total_time
+                                })
         
 entries_df = pd.DataFrame(entry_list)
 task_df = pd.DataFrame(tasks)
@@ -185,18 +190,18 @@ end_of_last_week = today + timedelta(days=(6 - today.weekday() - 7))
 team_members = entries_df.groupby("Team")["Assignee"].unique()
 team_members_number = team_members.apply(len)
 team_estimated_hours_worked =  task_df.groupby("Team")["estimated_hours"].sum()
-team_actual_hours_worked = entries_df.groupby("Team")["actual_hours"].sum()
-team_billable_hours = entries_df.groupby("Team")["billable_hours"].sum()
+# team_actual_hours_worked = entries_df.groupby("Team")["actual_hours"].sum()
+# team_billable_hours = entries_df.groupby("Team")["billable_hours"].sum()
         
 print(team_members)
 
-def view_one(): 
-        team_members = entries_df.groupby("Team")["assignee"].unique()
-        team_estimated_hours_worked =  task_df.groupby("Team")["estimated_hours"].sum()
-        team_actual_hours_worked = entries_df.groupby("Team")["actual_hours"].sum()
-        team_billable_hours = entries_df.groupby("Team")["billable_hours"].sum()
+# def view_one(): 
+        # team_members = entries_df.groupby("Team")["Assignee"].unique()
+        # team_estimated_hours_worked =  task_df.groupby("Team")["estimated_hours"].sum()
+        # team_actual_hours_worked = entries_df.groupby("Team")["actual_hours"].sum()
+        # team_billable_hours = entries_df.groupby("Team")["billable_hours"].sum()
         
-        total_hours = team_members.apply(len) * 40
+        # total_hours = team_members.apply(len) * 40
         # over_capacity = total_hours < team_actual_hours_worked
         # over_capacity_percentage = round(((team_actual_hours_worked / total_hours ) * 100) - 100 )
         # team_register_hours = dummy_data_keys.groupby("Team")["actual_hours"].sum()
