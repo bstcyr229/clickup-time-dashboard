@@ -76,6 +76,8 @@ for team in team_data:
                     date_for_task_dict = 0
                     total_billable_time = 0
                     total_non_billable_time = 0
+                    username = task.get("user", {}).get("username")
+                    team_member_team = user_group_dict.get(username, "Unknown")
                             
                     if task["time_estimate"] != None:
                         estimated_time = task["time_estimate"]
@@ -121,10 +123,11 @@ for team in team_data:
                         "Time Estimate": estimated_time,
                         "Task Assignee" : task_dict["Task Assignee"],
                         "Assignee Id" : task_dict["Assignee Id"],
+                        "Team": team_member_team,
                         "Entries" : task_dict["Entries"],
 
                         })
-                        
+
                         for entry in time_data:                
                             if entry["task"]["id"] == task["id"]:
                                 entry_date = dt.fromtimestamp(int(entry["at"])/ unix_converter).date().isoformat()    
@@ -143,7 +146,7 @@ for team in team_data:
                                 entry_date = dt.fromtimestamp(int(entry["at"])/ unix_converter).date().isoformat()
                                 team_member = entry["user"]["username"]
                                 team_member_id = entry["user"]["id"]
-                                team_member_team = user_group_dict[entry["user"]["username"]]
+                        
 
                                 
                                 task_dict["Entries"].append({
@@ -181,15 +184,19 @@ for team in team_data:
         
 entries_df = pd.DataFrame(entry_list)
 task_df = pd.DataFrame(tasks)
-today = dt.today().date()
 
+team_mapping = entries_df[['Task Id', 'Team']].drop_duplicates()
+merged_df = pd.merge(task_df, team_mapping, on='Task Id',how='left' )
+
+
+today = dt.today().date()
 start_of_last_week = today - timedelta( days=(9-today.weekday()))
 end_of_last_week = today + timedelta(days=(6 - today.weekday() - 7))
 
 
-team_members = entries_df.groupby("Team")["Assignee"].unique()
+team_members = merged_df.groupby("Team")["Team Member"].unique()
 team_members_number = team_members.apply(len)
-team_estimated_hours_worked =  task_df.groupby("Team")["estimated_hours"].sum()
+team_estimated_hours_worked = merged_df.groupby('Team')['Time Estimate'].sum()
 # team_actual_hours_worked = entries_df.groupby("Team")["actual_hours"].sum()
 # team_billable_hours = entries_df.groupby("Team")["billable_hours"].sum()
         
