@@ -121,7 +121,7 @@ for team in team_data:
                         "Start Date" : start_date_for_task_dict,
                         "Due Date" : due_date_for_task_dict,
                         "Time Estimate": estimated_time,
-                        "Task Assignee" : task_dict["Task Assignee"],
+                        "Assignee" : task_dict["Task Assignee"],
                         "Assignee Id" : task_dict["Assignee Id"],
                         "Team": team_member_team,
                         "Entries" : task_dict["Entries"],
@@ -152,7 +152,7 @@ for team in team_data:
                                 task_dict["Entries"].append({
                                     "Task Name": task["name"],
                                     "Task Id":task["id"], 
-                                    "Team Member" : team_member,
+                                    "Assignee" : team_member,
                                     "Team Member Id" : team_member_id,
                                     "Team": team_member_team,
                                     "Date":entry_date, 
@@ -188,19 +188,25 @@ task_df = pd.DataFrame(tasks)
 team_mapping = entries_df[['Task Id', 'Team']].drop_duplicates()
 merged_df = pd.merge(task_df, team_mapping, on='Task Id',how='left' )
 
+print("Current columns in merged_df", merged_df.columns.tolist())
+
+merged_df.drop(columns=["Team_x"])
+
+print("Current columns in merged_df", merged_df.columns.tolist())
+
 
 today = dt.today().date()
 start_of_last_week = today - timedelta( days=(9-today.weekday()))
 end_of_last_week = today + timedelta(days=(6 - today.weekday() - 7))
 
 
-team_members = merged_df.groupby("Team")["Team Member"].unique()
-team_members_number = team_members.apply(len)
-team_estimated_hours_worked = merged_df.groupby('Team')['Time Estimate'].sum()
+# team_members = merged_df.groupby("Team")["Team Member"].unique()
+#team_members_number = team_members.apply(len)
+# team_estimated_hours_worked = merged_df.groupby('Team')['Time Estimate'].sum()
 # team_actual_hours_worked = entries_df.groupby("Team")["actual_hours"].sum()
 # team_billable_hours = entries_df.groupby("Team")["billable_hours"].sum()
         
-print(team_members)
+#print(team_members)
 
 # def view_one(): 
         # team_members = entries_df.groupby("Team")["Assignee"].unique()
