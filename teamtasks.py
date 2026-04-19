@@ -15,9 +15,7 @@ load_dotenv()
 
 def main():
     pass 
-def fetching_workspace_id():
-    pass
-def fetching_teams_and_tasks():
+def fetching_tasks():
     pass
 def aggregrate_task_data():
     pass
@@ -30,24 +28,12 @@ def display_views():
         pass
 
 click_up_api_key = os.getenv("cu_api_key")
+workspace_id = os.getenv("workspace_id")
+test_space = os.getenv("test_space")
 headers = {"Authorization": click_up_api_key}
 
-get_workspace_id= requests.get("https://api.clickup.com/api/v2/team", headers=headers)
-print(f" the type of get_workspace_id is {type(get_workspace_id)}")
-workspace_data = get_workspace_id.json().get("teams")
-print(workspace_data)
+get_tasks = requests.get(f"https://api.clickup.com/api/v2/team/{workspace_id}/task", headers=headers, params={"team_ids[]": [test_space]})
+get_tasks_json = get_tasks.json().get("tasks")
+print(get_tasks_json)
 
 list_of_user_groups = []
-
-for team in workspace_data:
-    team_id = team["id"]
-    group_request =  requests.get("https://api.clickup.com/api/v2/group",headers=headers, params = {"team_id":team_id})
-    json_of_groups = group_request.json().get("groups")
-    
-    for team_id in json_of_groups:
-        list_of_user_groups.append(json_of_groups[1]["team_id"])
-
-
-        for team_id in  list_of_user_groups:
-            task_request= requests.get(f"https://api.clickup.com/api/v2/team/{team_id}/task", headers=headers)
-            tasks_json = task_request.json().get("tasks")
