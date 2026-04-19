@@ -28,12 +28,18 @@ def display_views():
         pass
 
 click_up_api_key = os.getenv("cu_api_key")
-workspace_id = os.getenv("workspace_id")
-test_space = os.getenv("test_space")
 headers = {"Authorization": click_up_api_key}
 
-get_tasks = requests.get(f"https://api.clickup.com/api/v2/team/{workspace_id}/task", headers=headers, params={"team_ids[]": [test_space]})
-get_tasks_json = get_tasks.json().get("tasks")
-print(get_tasks_json)
+workspace_id = os.getenv("workspace_id")
+test_space_id = os.getenv("test_space")
 
-list_of_user_groups = []
+
+milisecond_converter = 3600000
+unix_converter = 1000
+
+
+# This line will get all of the tasks in your ws, I am just configuring with a test space get_tasks = requests.get(f"https://api.clickup.com/api/v2/team/{workspace_id}/task", headers=headers")
+get_tasks= requests.get(f'https://api.clickup.com/api/v2/team/{workspace_id}/task?space_ids[]={test_space_id}',headers=headers) 
+get_tasks_json = get_tasks.json().get("tasks")
+
+# get_entries = requests.get(f"")
