@@ -16,7 +16,27 @@ load_dotenv()
 def main():
     pass 
 def fetching_tasks():
-    pass
+    click_up_api_key = os.getenv("cu_api_key")
+    headers = {"Authorization": click_up_api_key}
+
+    workspace_id = os.getenv("workspace_id")
+    test_space_id = os.getenv("test_space")
+
+
+    milisecond_converter = 3600000
+    unix_converter = 1000
+
+
+    # This line will get all of the tasks in your ws, I am just configuring with a test space get_tasks = requests.get(f"https://api.clickup.com/api/v2/team/{workspace_id}/task", headers=headers")
+    get_tasks= requests.get(f'https://api.clickup.com/api/v2/team/{workspace_id}/task?space_ids[]={test_space_id}',headers=headers) 
+    get_tasks_json = get_tasks.json().get("tasks")
+    due_date = dt(2026,4 ,19).timestamp() * unix_converter
+    get_entries_from_before_due_date = ""
+    
+
+
+    # get_entries = requests.get(f"")
+
 def aggregrate_task_data():
     pass
 def display_views():
@@ -27,19 +47,4 @@ def display_views():
     def view_three():
         pass
 
-click_up_api_key = os.getenv("cu_api_key")
-headers = {"Authorization": click_up_api_key}
-
-workspace_id = os.getenv("workspace_id")
-test_space_id = os.getenv("test_space")
-
-
-milisecond_converter = 3600000
-unix_converter = 1000
-
-
-# This line will get all of the tasks in your ws, I am just configuring with a test space get_tasks = requests.get(f"https://api.clickup.com/api/v2/team/{workspace_id}/task", headers=headers")
-get_tasks= requests.get(f'https://api.clickup.com/api/v2/team/{workspace_id}/task?space_ids[]={test_space_id}',headers=headers) 
-get_tasks_json = get_tasks.json().get("tasks")
-
-# get_entries = requests.get(f"")
+fetching_tasks()
