@@ -30,10 +30,12 @@ def fetching_tasks():
     # This line will get all of the tasks in your ws, I am just configuring with a test space get_tasks = requests.get(f"https://api.clickup.com/api/v2/team/{workspace_id}/task", headers=headers")
     get_tasks= requests.get(f'https://api.clickup.com/api/v2/team/{workspace_id}/task?space_ids[]={test_space_id}',headers=headers) 
     get_tasks_json = get_tasks.json().get("tasks")
-    due_date = dt(2026,4 ,19).timestamp() * unix_converter
-    get_entries_from_before_due_date = ""
+    due_date = (dt(2026,4 ,19).timestamp() * unix_converter) 
+    start_date = (dt(2026,4,12).timestamp() * unix_converter) 
     
-
+    get_entries_from_before_due_and_start_dates = requests.get(f"https://api.clickup.com/api/v2/team/{workspace_id}/time_entries?start_date={start_date}&end_date={due_date}", headers=headers)
+    date_filtered_entries = get_entries_from_before_due_and_start_dates.json().get("entries")
+    print(date_filtered_entries)
 
     # get_entries = requests.get(f"")
 
