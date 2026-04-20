@@ -36,17 +36,17 @@ def fetching_tasks():
         print(f"Task request API call failed. ERROR CODE: { get_tasks_request}")
     else:
         get_tasks_json = get_tasks_request.json().get("tasks")
-        due_date = (dt(2026,4 ,19).timestamp() * unix_converter) 
-        start_date = (dt(2026,4,12).timestamp() * unix_converter) 
-        
-    get_entries_from_before_due_and_start_dates = requests.get(f"https://api.clickup.com/api/v2/team/{workspace_id}/time_entries?end_date_lt={due_date}", headers=headers)
+        end_date = int(dt(2026,4 ,19).timestamp() * unix_converter) 
+        start_date = int(dt(2026,4,12).timestamp() * unix_converter) 
+    get_entries_from_before_due_and_start_dates = requests.get(f'https://api.clickup.com/api/v2/team/{workspace_id}/time_entries?start_date={start_date}&end_date={end_date}', headers=headers)
+    print(get_entries_from_before_due_and_start_dates)
     if get_entries_from_before_due_and_start_dates.status_code != 200:
         print(f"Date filtered entries request API call failed, ERROR CODE: {get_entries_from_before_due_and_start_dates}")
     else:
         date_filtered_entries = get_entries_from_before_due_and_start_dates.json().get("entries")
         if date_filtered_entries is None:
             print("No entries found")
-
+            
 def aggregrate_task_data():
     pass
 def display_views():
