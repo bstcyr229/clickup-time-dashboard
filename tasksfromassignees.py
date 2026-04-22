@@ -3,6 +3,7 @@
 
 
 import dummy_data as gdd
+import numpy as np
 import pandas as pd
 import streamlit as st
 import altair as alt   
@@ -37,6 +38,7 @@ def fetching_tasks():
     start_date = dt(2026, 4, 1, tzinfo=timezone.utc)
     end_date = dt(2026, 4, 21, tzinfo=timezone.utc)
     unix_converter = 1000
+    mileseconds_converter = 3600000
 
     get_user_teams_request = requests.get(f"https://api.clickup.com/api/v2/group?team_id={workspace_id }", headers=headers)
     if get_user_teams_request.status_code != 200:
@@ -68,9 +70,47 @@ def fetching_tasks():
             return tasks_and_entries_tuple
             
 def aggregrate_task_data(tasks_and_entries_tuple):
+    unix_converter = 1000
+    mileseconds_converter = 3600000
+    
     entries_json = tasks_and_entries_tuple [0]
     tasks_json = tasks_and_entries_tuple[1]
     user_groups_json = tasks_and_entries_tuple[2]
+
+    user_groups_df = pd.json_normalize(user_groups_json) 
+    # user_groups
+    
+    tasks_df = pd.json_normalize(tasks_json)
+    tasks_df['time_estimate'] / mileseconds_converter 
+    tasks_df['time_spent'] / mileseconds_converter
+    tasks_df['start_date'] /mileseconds_converter  
+    tasks_df['due_date'] / mileseconds_converter
+
+    
+    task_df_filtered = tasks_df[[
+        'id', #task id
+        'name', # task name
+        'time_estimate',
+        'time_spent',
+        'start_date', 
+        'due_date'
+    ]].copy()
+    
+    entries_df = pd.json_normalize(entries_json)
+    entries_df['non-billable'] = np.where(entries_df['billable'] != True, entries_df['duration'] /mileseconds_converter, 0 )
+    entries_df['billable_hours'] = np.where(entries_df['billable'] == True, entries_df['duration'] /mileseconds_converter, 0 )
+    entries_df_filtered_for_billable = entries_df[[
+        'user.username',
+        'user.id',
+        'task.name',
+        'at',
+        'billable_hours',
+        'non-billable'
+
+
+
+
+    ]].copy()
     
 def display_views():
     def view_one():
