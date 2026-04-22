@@ -1,4 +1,6 @@
 #NEXT- Construct view one based on entries and user groups (teams in ClickUp UI)
+#Evening session 4/22/26
+    # type cast my task_df columns to int so the milisecond converter will work 
 
 
 
@@ -77,14 +79,15 @@ def aggregrate_task_data(tasks_and_entries_tuple):
     tasks_json = tasks_and_entries_tuple[1]
     user_groups_json = tasks_and_entries_tuple[2]
 
+    # print(user_groups_json)
     user_groups_df = pd.json_normalize(user_groups_json) 
-    # user_groups
+    
     
     tasks_df = pd.json_normalize(tasks_json)
-    tasks_df['time_estimate'] / mileseconds_converter 
-    tasks_df['time_spent'] / mileseconds_converter
-    tasks_df['start_date'] /mileseconds_converter  
-    tasks_df['due_date'] / mileseconds_converter
+    tasks_df['time_estimate'] = tasks_df['time_estimate'].astype("Int64") / mileseconds_converter
+    tasks_df['time_spent'] = tasks_df['time_spent'].astype("Int64") / mileseconds_converter
+    tasks_df['start_date'] = tasks_df['start_date'].astype("Int64") /mileseconds_converter  
+    tasks_df['due_date'] = tasks_df['due_date'].astype('Int64') / mileseconds_converter
 
     
     task_df_filtered = tasks_df[[
@@ -97,8 +100,12 @@ def aggregrate_task_data(tasks_and_entries_tuple):
     ]].copy()
     
     entries_df = pd.json_normalize(entries_json)
-    entries_df['non-billable'] = np.where(entries_df['billable'] != True, entries_df['duration'] /mileseconds_converter, 0 )
-    entries_df['billable_hours'] = np.where(entries_df['billable'] == True, entries_df['duration'] /mileseconds_converter, 0 )
+    entries_df['duration'].astype('Int64')    
+    
+    entries_df['non-billable'] = np.where(entries_df['billable'] != True, entries_df['duration'],0).astype(int) / mileseconds_converter
+    print(f"entries_f non-billable is {entries_df['non-billable'] }")
+    entries_df['billable_hours'] = np.where(entries_df['billable'] == True, entries_df['duration'], 0 ).astype(int) / mileseconds_converter
+    
     entries_df_filtered_for_billable = entries_df[[
         'user.username',
         'user.id',
