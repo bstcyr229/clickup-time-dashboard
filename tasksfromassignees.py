@@ -79,8 +79,15 @@ def aggregrate_task_data(tasks_and_entries_tuple):
     tasks_json = tasks_and_entries_tuple[1]
     user_groups_json = tasks_and_entries_tuple[2]
 
-    # print(user_groups_json)
     user_groups_df = pd.json_normalize(user_groups_json) 
+    user_groups_df = user_groups_df.explode('members')["name"]
+    print(user_groups_df)
+    
+
+    # user_groups_df_filtered = user_groups_df[[
+    #     'name',
+    #     'members.name'
+    # ]].copy 
     
     
     tasks_df = pd.json_normalize(tasks_json)
@@ -103,7 +110,6 @@ def aggregrate_task_data(tasks_and_entries_tuple):
     entries_df['duration'].astype('Int64')    
     
     entries_df['non-billable'] = np.where(entries_df['billable'] != True, entries_df['duration'],0).astype(int) / mileseconds_converter
-    print(f"entries_f non-billable is {entries_df['non-billable'] }")
     entries_df['billable_hours'] = np.where(entries_df['billable'] == True, entries_df['duration'], 0 ).astype(int) / mileseconds_converter
     
     entries_df_filtered_for_billable = entries_df[[
