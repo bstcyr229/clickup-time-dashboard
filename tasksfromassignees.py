@@ -80,14 +80,13 @@ def aggregrate_task_data(tasks_and_entries_tuple):
     user_groups_json = tasks_and_entries_tuple[2]
 
     user_groups_df = pd.json_normalize(user_groups_json) 
-    user_groups_df = user_groups_df.explode('members')["name"]
-    user_groups_df = user_groups_df.explode('members')['username']
-    user_groups_df["username"] = user_groups_df["members"][0][0]["username"]
+    user_groups_df = user_groups_df.explode('members')
+    user_groups_df["username"] = user_groups_df['members'].apply(lambda x: x["username"])
     
 
     user_groups_df_filtered = user_groups_df[[
         'name',
-        'members.name'
+        'username'
     ]].copy 
     
     
