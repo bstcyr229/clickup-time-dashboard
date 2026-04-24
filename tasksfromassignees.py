@@ -81,14 +81,15 @@ def aggregrate_task_data(tasks_and_entries_tuple):
 
     user_groups_df = pd.json_normalize(user_groups_json) 
     user_groups_df = user_groups_df.explode('members')
-    user_groups_df["username"] = user_groups_df['members'].apply(lambda x: x["username"])
-    
+    # user_groups_df["username"] = user_groups_df['members'].apply(lambda x: x["username"]) 
+    user_groups_df["team name"] = user_groups_df['name']
+    user_groups_df["username"] = user_groups_df['members'].apply(lambda x: x.get("username") if isinstance(x,dict) else None)
 
     user_groups_df_filtered = user_groups_df[[
-        'name',
+        'team name',
         'username'
     ]].copy 
-    
+    print(user_groups_df_filtered)
     
     tasks_df = pd.json_normalize(tasks_json)
     tasks_df['time_estimate'] = tasks_df['time_estimate'].astype("Int64") / mileseconds_converter
