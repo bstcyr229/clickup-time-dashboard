@@ -56,6 +56,7 @@ def fetching_tasks():
         print(f"Task request API call failed. ERROR CODE: { get_tasks_request}")
     else:
         get_tasks_json = get_tasks_request.json().get("tasks")
+        print(get_tasks_json)
     
     start_date_ms = int(start_date.timestamp() * unix_converter)
     end_date_ms = int(end_date.timestamp() * unix_converter)    
@@ -81,12 +82,13 @@ def aggregrate_task_data(tasks_and_entries_tuple):
 
     user_groups_df = pd.json_normalize(user_groups_json) 
     user_groups_df = user_groups_df.explode('members')
-    user_groups_df["team name"] = user_groups_df['name']
-    user_groups_df["username"] = user_groups_df['members'].apply(lambda x: x.get("username") if isinstance(x,dict) else None)
-
+    user_groups_df["Team"] = user_groups_df['name']
+    user_groups_df["team memeer"] = user_groups_df['members'].apply(lambda x: x.get("username") if isinstance(x,dict) else None)
+    user_groups_df["user id"] = user_groups_df['members'].apply(lambda x: x.get("id") if isinstance(x,dict) else None)
     user_groups_df_filtered = user_groups_df[[
-        'team name',
-        'username'
+        'Team',
+    
+        'user id'
     ]].copy 
     
     tasks_df = pd.json_normalize(tasks_json)
@@ -94,7 +96,8 @@ def aggregrate_task_data(tasks_and_entries_tuple):
     tasks_df['time_spent'] = tasks_df['time_spent'].astype("Int64") / mileseconds_converter
     tasks_df['start_date'] = tasks_df['start_date'].astype("Int64") /mileseconds_converter  
     tasks_df['due_date'] = tasks_df['due_date'].astype('Int64') / mileseconds_converter
-
+    print(tasks_df['assignees']) 
+    # tasks_df['team member'] = tasks_df['assignees'].apply(lambda x: x.get('username') if isinstance(x,dict) else None)
     
     task_df_filtered = tasks_df[[
         'id', #task id
@@ -104,14 +107,14 @@ def aggregrate_task_data(tasks_and_entries_tuple):
         'start_date', 
         'due_date'
     ]].copy()
-    
+
     entries_df = pd.json_normalize(entries_json)
     entries_df['duration'] = entries_df['duration'].astype('Int64') / mileseconds_converter   
-    entries_df['at'] = entries_df['at'].apply( lambda x: dt.fromtimestamp(int(x) / unix_converter).date().isoformat())
-    entries_df['non-billable'] = np.where(entries_df['billable'] != True, entries_df['duration'],0).astype(int) / mileseconds_converter
-    entries_df['billable_hours'] = np.where(entries_df['billable'] == True, entries_df['duration'], 0 ).astype(int) / mileseconds_converter
-    
-    entries_df_filtered_for_billable = entries_df[[
+    entries_df['at'] = entries_df['at'].apply( lambda x: dt.fromtimestamp(int(x) / unix_converter).date().isoformat()) # Getting Date for each entry
+    entries_df['non-billable'] = np.where(entries_df['billable'] != True, entries_df['duration'],0)
+    entries_df['billable_hours'] = np.where(entries_df['billable'] == True, entries_df['duration'], 0 )
+
+    entries_df_filtered_for_billable_and_non = entries_df[[
         'user.username',
         'user.id',
         'task.name',
@@ -120,12 +123,17 @@ def aggregrate_task_data(tasks_and_entries_tuple):
         'non-billable'
 
     ]].copy()
-    # print(entries_df_filtered_for_billable)
+
+    user_groups_tasks_entries_tuple = user_groups_df_filtered, task_df_filtered , entries_df_filtered_for_billable_and_non
+    return user_groups_tasks_entries_tuple
+def display_views(user_groups_tasks_entries_tuple):
+    user_groups_filtered = user_groups_tasks_entries_tuple[0]
+    tasks_filtered = user_groups_tasks_entries_tuple [1]
+    entries_filtered = user_groups_tasks_entries_tuple [2]
     
-def display_views():
+    
     def view_one():
-        pass
-        # team_members = entries_df.groupby("Team")["Assignee"].unique()
+        team_members =  user_groups_filtered.groupby("Team")["user name"].unique()
         # team_estimated_hours_worked =  task_df.groupby("Team")["estimated_hours"].sum()
         # team_actual_hours_worked = entries_df.groupby("Team")["actual_hours"].sum()
         # team_billable_hours = entries_df.groupby("Team")["billable_hours"].sum()
@@ -179,4 +187,4 @@ def display_views():
     def view_three():
         pass
 
-aggregrate_task_data(fetching_tasks())
+display_views(aggregrate_task_data(fetching_tasks()))
