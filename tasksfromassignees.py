@@ -36,7 +36,7 @@ def fetching_tasks():
     date_filtered_entries = []
     user_teams_json = []
     tasks_and_entries_tuple = ()
-    
+
     start_date = dt(2026, 4, 1, tzinfo=timezone.utc)
     end_date = dt(2026, 4, 21, tzinfo=timezone.utc)
     unix_converter = 1000
@@ -81,7 +81,6 @@ def aggregrate_task_data(tasks_and_entries_tuple):
 
     user_groups_df = pd.json_normalize(user_groups_json) 
     user_groups_df = user_groups_df.explode('members')
-    # user_groups_df["username"] = user_groups_df['members'].apply(lambda x: x["username"]) 
     user_groups_df["team name"] = user_groups_df['name']
     user_groups_df["username"] = user_groups_df['members'].apply(lambda x: x.get("username") if isinstance(x,dict) else None)
 
@@ -89,7 +88,6 @@ def aggregrate_task_data(tasks_and_entries_tuple):
         'team name',
         'username'
     ]].copy 
-    print(user_groups_df_filtered)
     
     tasks_df = pd.json_normalize(tasks_json)
     tasks_df['time_estimate'] = tasks_df['time_estimate'].astype("Int64") / mileseconds_converter
@@ -108,8 +106,8 @@ def aggregrate_task_data(tasks_and_entries_tuple):
     ]].copy()
     
     entries_df = pd.json_normalize(entries_json)
-    entries_df['duration'].astype('Int64')    
-    
+    entries_df['duration'] = entries_df['duration'].astype('Int64') / mileseconds_converter   
+    entries_df['at'] = entries_df['at'].apply( lambda x: dt.fromtimestamp(int(x) / unix_converter).date().isoformat())
     entries_df['non-billable'] = np.where(entries_df['billable'] != True, entries_df['duration'],0).astype(int) / mileseconds_converter
     entries_df['billable_hours'] = np.where(entries_df['billable'] == True, entries_df['duration'], 0 ).astype(int) / mileseconds_converter
     
@@ -121,14 +119,61 @@ def aggregrate_task_data(tasks_and_entries_tuple):
         'billable_hours',
         'non-billable'
 
-
-
-
     ]].copy()
+    # print(entries_df_filtered_for_billable)
     
 def display_views():
     def view_one():
         pass
+        # team_members = entries_df.groupby("Team")["Assignee"].unique()
+        # team_estimated_hours_worked =  task_df.groupby("Team")["estimated_hours"].sum()
+        # team_actual_hours_worked = entries_df.groupby("Team")["actual_hours"].sum()
+        # team_billable_hours = entries_df.groupby("Team")["billable_hours"].sum()
+        
+        # total_hours = team_members.apply(len) * 40
+        # over_capacity = total_hours < team_actual_hours_worked
+        # over_capacity_percentage = round(((team_actual_hours_worked / total_hours ) * 100) - 100 )
+        # team_register_hours = dummy_data_keys.groupby("Team")["actual_hours"].sum()
+        
+        # days = dummy_data_keys.groupby("Team")["day"].agg(list)
+        
+
+    
+#     col1, col2, col3 = st.columns(3)
+#     col4, col5, col6 = st.columns(3)
+#     col7, col8, col9 = st.columns(3)
+    
+#     with col1:
+#         st.metric(label="Team 1 Total Capacity", value=f"{total_hours['Team One']}")
+#     with col2:
+#         st.metric(label="Team 2 Total Capacity", value=f"{total_hours['Team Two']}")
+#     with col3:
+#         st.metric(label="Team 3 Total Capacity", value=f"{total_hours['Team Three']}")
+#     with col4:
+#         st.metric(label="Team 1 Actual Hours Worked", value=f"{team_actual_hours_worked['Team One']}", delta=f"{over_capacity_percentage['Team One']:+.2f}%")
+#     with col5:
+#         st.metric(label="Team 2 Actual Hours Worked", value=f"{team_actual_hours_worked['Team Two']}", delta=f"{over_capacity_percentage['Team Two']:+.2f}%")
+#     with col6:
+#         st.metric(label="Team 3 Actual Hours Worked", value=f"{team_actual_hours_worked['Team Three']}", delta=f"{over_capacity_percentage['Team Three']:+.2f}%")
+#     with col7:
+#         st.metric(label="Team 1 Billable to Actual", value=f"{(team_billable_hours['Team One'] / team_actual_hours_worked['Team One']):.2f}")
+#     with col8:
+#         st.metric(label="Team 2 Billable to Actual", value=f"{(team_billable_hours['Team Two'] / team_actual_hours_worked['Team Two']):.2f}")
+#     with col9:
+#         st.metric(label="Team 3 Billable to Actual", value=f"{team_billable_hours['Team Three']/ team_actual_hours_worked['Team Three']:.2f}")
+    
+    
+    
+#     hours_worked_by_team_and_day = pd.DataFrame({"Estimated Hours Worked": team_estimated_hours_worked, "Actual Hours Worked": team_actual_hours_worked, "Billable Hours Worked": team_billable_hours, "Overcapacity":over_capacity})
+#     st.title("Team View")
+#     st.dataframe(data= hours_worked_by_team_and_day)
+    
+#     hours_worked_by_team_and_day = pd.DataFrame({ "Estimated Hours Worked": team_estimated_hours_worked, "Actual Hours Worked": team_actual_hours_worked, "Billable Hours Worked": team_billable_hours, "Overcapacity":over_capacity})
+    
+#     days_seperated_for_graph = dummy_data_keys.groupby(["Team", "day"])["actual_hours"].sum().unstack().transpose().reset_index()
+#     st.write("Days to Hours Worked by Team")
+#     st.area_chart(data=days_seperated_for_graph, x="day", y=["Team One", "Team Two", "Team Three"], use_container_width=True) 
+
     def view_two():
         pass
     def view_three():
