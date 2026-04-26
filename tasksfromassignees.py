@@ -119,11 +119,12 @@ def aggregrate_task_data(tasks_and_entries_tuple):
     entries_df['at'] = entries_df['at'].apply( lambda x: dt.fromtimestamp(int(x) / unix_converter).date().isoformat()) # Getting the date for each entry
     entries_df['non-billable'] = np.where(entries_df['billable'] != True, entries_df['duration'],0)
     entries_df['billable_hours'] = np.where(entries_df['billable'] == True, entries_df['duration'], 0 )
-    entries_df['task name'] = entries_df.apply(lambda x: x.get('name'))
-    print(f"I'm in the entries df {entries_df["task name"]}")
-    # entries_df['team member id']
-    # entires_df['task name']
-
+    entries_df['task name'] = entries_df['task.name']
+    entries_df['task id'] = entries_df['task.id']
+    entries_df['team member'] = entries_df['user.username']
+    entries_df['team member id'] = entries_df['user.id']
+    
+    
     entries_df_filtered_for_billable_and_non = entries_df[[
         'user.username',
         'user.id',
