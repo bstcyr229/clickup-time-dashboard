@@ -123,7 +123,7 @@ def aggregrate_task_data(tasks_and_entries_tuple):
     entries_df['task name'] = entries_df['task.name']
     entries_df['task id'] = entries_df['task.id']
     entries_df['team member'] = entries_df['user.username']
-    entries_df['team member id'] = entries_df['user.id']
+    entries_df['team member id'] = entries_df['user.id'].astype("Int64")
     
 
     entries_df_filtered_for_billable_and_non = entries_df[[
@@ -135,7 +135,9 @@ def aggregrate_task_data(tasks_and_entries_tuple):
         'billable_hours',
         'non-billable'
     ]].copy()
-
+    print(entries_df_filtered_for_billable_and_non['team member id'].dtype)
+    print(user_groups_df['team member id'].dtype)
+    
     entries_df_filtered_for_billable_and_non = entries_df_filtered_for_billable_and_non.merge(user_groups_df[["team name", "team member id"]] , on="team member id")
     print(entries_df_filtered_for_billable_and_non)
     user_groups_tasks_entries_tuple = user_groups_df_filtered, task_df_filtered , entries_df_filtered_for_billable_and_non
