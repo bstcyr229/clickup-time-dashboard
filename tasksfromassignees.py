@@ -83,9 +83,10 @@ def aggregrate_task_data(tasks_and_entries_tuple):
 
     user_groups_df = pd.json_normalize(user_groups_json) 
     user_groups_df = user_groups_df.explode('members')
+    print(user_groups_df["members"].head())
     user_groups_df["team name"] = user_groups_df['name']
-    user_groups_df["team member"] = user_groups_df['members'].apply(lambda x: x[0].get("username") if isinstance(x,list) and len(x) > 0 else None)
-    user_groups_df["team member id"] = user_groups_df['members'].apply(lambda x: x[0].get("id") if isinstance(x,list) and len(x) > 0 else None)
+    user_groups_df["team member"] = user_groups_df['members'].apply(lambda x: x.get("username") if isinstance(x,dict) and len(x) > 0 else None)
+    user_groups_df["team member id"] = user_groups_df['members'].apply(lambda x: x.get("id") if isinstance(x,dict) and len(x) > 0 else None)
     user_groups_df["team member id"] = user_groups_df['team member id'].astype('Int64')
     user_groups_df_filtered = user_groups_df[[
         'team name',
@@ -94,10 +95,10 @@ def aggregrate_task_data(tasks_and_entries_tuple):
     ]].copy 
     
     tasks_df = pd.json_normalize(tasks_json)
-    tasks_df['time_estimate'] = tasks_df['time_estimate'].astype("Int64") / mileseconds_converter
+    tasks_df['time estimate'] = tasks_df['time_estimate'].astype("Int64") / mileseconds_converter
     tasks_df['time_spent'] = tasks_df['time_spent'].astype("Int64") / mileseconds_converter
-    tasks_df['start_date'] = tasks_df['start_date'].astype("Int64") /mileseconds_converter  
-    tasks_df['due_date'] = tasks_df['due_date'].astype('Int64') / mileseconds_converter
+    tasks_df['task start date'] = tasks_df['start_date'].astype("Int64") /mileseconds_converter  
+    tasks_df['task due date'] = tasks_df['due_date'].astype('Int64') / mileseconds_converter
     tasks_df["user id"] = tasks_df['assignees'].apply(lambda x: x[0].get("id") if isinstance(x,list) and len(x) > 0 else None)
     tasks_df['team member'] = tasks_df['assignees'].apply(lambda x: x.get('username') if isinstance(x,dict) else None)
     tasks_df['team member id'] = tasks_df['assignees'].apply(lambda x: x.get('id') if isinstance(x,dict) else None)
@@ -109,10 +110,10 @@ def aggregrate_task_data(tasks_and_entries_tuple):
         'task name', 
         'team member',
         'team member id',
-        'time_estimate',
+        'time estimate',
         'time_spent',
-        'start_date', 
-        'due_date'
+        'task start date', 
+        'task due date'
     ]].copy()
 
     entries_df = pd.json_normalize(entries_json)
@@ -126,7 +127,7 @@ def aggregrate_task_data(tasks_and_entries_tuple):
     entries_df['team member id'] = entries_df['user.id'].astype("Int64")
     
 
-    entries_df_filtered_for_billable_and_non = entries_df[[
+    final_df = entries_df[[
         'team member',
         'team member id',
         'task name',
@@ -135,19 +136,18 @@ def aggregrate_task_data(tasks_and_entries_tuple):
         'billable_hours',
         'non-billable'
     ]].copy()
-    print(entries_df_filtered_for_billable_and_non['team member id'].dtype)
-    print(user_groups_df['team member id'].dtype)
-    
-    entries_df_filtered_for_billable_and_non = entries_df_filtered_for_billable_and_non.merge(user_groups_df[["team name", "team member id"]] , on="team member id")
-    print(entries_df_filtered_for_billable_and_non)
-    user_groups_tasks_entries_tuple = user_groups_df_filtered, task_df_filtered , entries_df_filtered_for_billable_and_non
-    return user_groups_tasks_entries_tuple
-def display_views(user_groups_tasks_entries_tuple):
-    user_groups_filtered = user_groups_tasks_entries_tuple[0]
-    tasks_filtered = user_groups_tasks_entries_tuple [1]
-    entries_filtered = user_groups_tasks_entries_tuple [2]
     
     
+    final_df = final_df.merge(user_groups_df[["team name", "team member id"]] , on="team member id")
+    final_df = final_df.merge(tasks_df[["time estimate", "task id"]], on="task id")
+    # final_df = final_df.merge(tasks_df[["task start date", "task id"]], on="task id")
+    # final_df = final_df.merge(tasks_df[["task due date", "task id"]], on="task id")
+
+
+    print(final_df)
+    return final_df
+def display_views(final_df):
+    pass 
     def view_one():
         pass
         # team_members =  user_groups_filtered.groupby("Team")["team member"].unique()
