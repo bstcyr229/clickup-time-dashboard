@@ -86,6 +86,7 @@ def aggregrate_task_data(tasks_and_entries_tuple):
     user_groups_df["team name"] = user_groups_df['name']
     user_groups_df["team member"] = user_groups_df['members'].apply(lambda x: x[0].get("username") if isinstance(x,list) and len(x) > 0 else None)
     user_groups_df["team member id"] = user_groups_df['members'].apply(lambda x: x[0].get("id") if isinstance(x,list) and len(x) > 0 else None)
+    user_groups_df["team member id"] = user_groups_df['team member id'].astype('Int64')
     user_groups_df_filtered = user_groups_df[[
         'team name',
         'team member',
@@ -116,7 +117,7 @@ def aggregrate_task_data(tasks_and_entries_tuple):
 
     entries_df = pd.json_normalize(entries_json)
     entries_df['duration'] = entries_df['duration'].astype('Int64') / mileseconds_converter   
-    entries_df['at'] = entries_df['at'].apply( lambda x: dt.fromtimestamp(int(x) / unix_converter).date().isoformat()) # Getting the date for each entry
+    entries_df['entry date'] = entries_df['at'].apply( lambda x: dt.fromtimestamp(int(x) / unix_converter).date().isoformat()) # Getting the date for each entry
     entries_df['non-billable'] = np.where(entries_df['billable'] != True, entries_df['duration'],0)
     entries_df['billable_hours'] = np.where(entries_df['billable'] == True, entries_df['duration'], 0 )
     entries_df['task name'] = entries_df['task.name']
@@ -124,17 +125,19 @@ def aggregrate_task_data(tasks_and_entries_tuple):
     entries_df['team member'] = entries_df['user.username']
     entries_df['team member id'] = entries_df['user.id']
     
-    
+
     entries_df_filtered_for_billable_and_non = entries_df[[
-        'user.username',
-        'user.id',
-        'task.name',
-        'at',
+        'team member',
+        'team member id',
+        'task name',
+        'task id',
+        'entry date',
         'billable_hours',
         'non-billable'
-
     ]].copy()
 
+    entries_df_filtered_for_billable_and_non = entries_df_filtered_for_billable_and_non.merge(user_groups_df[["team name", "team member id"]] , on="team member id")
+    print(entries_df_filtered_for_billable_and_non)
     user_groups_tasks_entries_tuple = user_groups_df_filtered, task_df_filtered , entries_df_filtered_for_billable_and_non
     return user_groups_tasks_entries_tuple
 def display_views(user_groups_tasks_entries_tuple):
