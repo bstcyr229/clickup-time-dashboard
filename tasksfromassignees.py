@@ -83,7 +83,6 @@ def aggregrate_task_data(tasks_and_entries_tuple):
 
     user_groups_df = pd.json_normalize(user_groups_json) 
     user_groups_df = user_groups_df.explode('members')
-    print(user_groups_df["members"].head())
     user_groups_df["team name"] = user_groups_df['name']
     user_groups_df["team member"] = user_groups_df['members'].apply(lambda x: x.get("username") if isinstance(x,dict) and len(x) > 0 else None)
     user_groups_df["team member id"] = user_groups_df['members'].apply(lambda x: x.get("id") if isinstance(x,dict) and len(x) > 0 else None)
@@ -97,8 +96,8 @@ def aggregrate_task_data(tasks_and_entries_tuple):
     tasks_df = pd.json_normalize(tasks_json)
     tasks_df['time estimate'] = tasks_df['time_estimate'].astype("Int64") / mileseconds_converter
     tasks_df['time_spent'] = tasks_df['time_spent'].astype("Int64") / mileseconds_converter
-    tasks_df['task start date'] = tasks_df['start_date'].astype("Int64") /mileseconds_converter  
-    tasks_df['task due date'] = tasks_df['due_date'].astype('Int64') / mileseconds_converter
+    tasks_df['task start date'] = tasks_df['start_date'].apply( lambda x: dt.fromtimestamp(int(x) / unix_converter).date().isoformat() if x is not None else "No date found")
+    tasks_df['task due date'] = tasks_df['due_date'].apply( lambda x: dt.fromtimestamp(int(x) / unix_converter).date().isoformat() if x is not None else "No date found")
     tasks_df["user id"] = tasks_df['assignees'].apply(lambda x: x[0].get("id") if isinstance(x,list) and len(x) > 0 else None)
     tasks_df['team member'] = tasks_df['assignees'].apply(lambda x: x.get('username') if isinstance(x,dict) else None)
     tasks_df['team member id'] = tasks_df['assignees'].apply(lambda x: x.get('id') if isinstance(x,dict) else None)
@@ -118,7 +117,7 @@ def aggregrate_task_data(tasks_and_entries_tuple):
 
     entries_df = pd.json_normalize(entries_json)
     entries_df['duration'] = entries_df['duration'].astype('Int64') / mileseconds_converter   
-    entries_df['entry date'] = entries_df['at'].apply( lambda x: dt.fromtimestamp(int(x) / unix_converter).date().isoformat()) # Getting the date for each entry
+    entries_df['entry date'] = entries_df['at'].apply( lambda x: dt.fromtimestamp(int(x) / unix_converter).date().isoformat() if x is not None else "No date found") # Getting the date for each entry
     entries_df['non-billable'] = np.where(entries_df['billable'] != True, entries_df['duration'],0)
     entries_df['billable_hours'] = np.where(entries_df['billable'] == True, entries_df['duration'], 0 )
     entries_df['task name'] = entries_df['task.name']
@@ -140,9 +139,8 @@ def aggregrate_task_data(tasks_and_entries_tuple):
     
     final_df = final_df.merge(user_groups_df[["team name", "team member id"]] , on="team member id")
     final_df = final_df.merge(tasks_df[["time estimate", "task id"]], on="task id")
-    # final_df = final_df.merge(tasks_df[["task start date", "task id"]], on="task id")
-    # final_df = final_df.merge(tasks_df[["task due date", "task id"]], on="task id")
-
+    final_df = final_df.merge(tasks_df[["task start date", "task id"]], on="task id")
+    final_df = final_df.merge(tasks_df[["task due date", "task id"]], on="task id")
 
     print(final_df)
     return final_df
