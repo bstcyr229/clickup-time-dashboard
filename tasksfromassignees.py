@@ -147,18 +147,18 @@ def aggregrate_task_data(tasks_and_entries_tuple):
     print(final_df.columns.tolist())
     return final_df
 def display_views(final_df):
-    pass 
+    work_days = pd.Categorical(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], categories=["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], ordered=True)
+    work_days_df = pd.Categorical(work_days)
     def view_one():
-        pass
-        # team_members =  user_groups_filtered.groupby("Team")["team member"].unique()
-        # team_estimated_hours_worked =  task_df.groupby("Team")["estimated_hours"].sum()
-        # team_actual_hours_worked = entries_df.groupby("Team")["actual_hours"].sum()
-        # team_billable_hours = entries_df.groupby("Team")["billable_hours"].sum()
+        team_members =  final_df.groupby("Team")["team member"].unique()
+        team_estimated_hours_worked =  final_df.groupby("Team")["time estimate"].sum()
+        team_actual_hours_worked = final_df.groupby("Team")["actual_hours"].sum()
+        team_billable_hours = final_df.groupby("Team")["billable_hours"].sum()
         
-        # total_hours = team_members.apply(len) * 40
-        # over_capacity = total_hours < team_actual_hours_worked
-        # over_capacity_percentage = round(((team_actual_hours_worked / total_hours ) * 100) - 100 )
-        # team_register_hours = dummy_data_keys.groupby("Team")["actual_hours"].sum()
+        total_hours = team_members.apply(len) * 40
+        over_capacity = total_hours < team_actual_hours_worked
+        over_capacity_percentage = round(((team_actual_hours_worked / total_hours ) * 100) - 100 )
+        team_register_hours = final_df.groupby("Team")["total hours"].sum()
         
         # days = dummy_data_keys.groupby("Team")["day"].agg(list)
         
