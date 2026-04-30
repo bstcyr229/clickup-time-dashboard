@@ -120,6 +120,8 @@ def aggregrate_task_data(tasks_and_entries_tuple):
     entries_df['entry date'] = entries_df['at'].apply( lambda x: dt.fromtimestamp(int(x) / unix_converter).date().isoformat() if x is not None else "No date found") # Getting the date for each entry
     entries_df['non-billable'] = np.where(entries_df['billable'] != True, entries_df['duration'],0)
     entries_df['billable_hours'] = np.where(entries_df['billable'] == True, entries_df['duration'], 0 )
+    entries_df['total hours'] = entries_df[['non-billable', 'billable_hours']].sum(axis=1)
+    print(f"Total hours my guy {entries_df['total hours']}")
     entries_df['task name'] = entries_df['task.name']
     entries_df['task id'] = entries_df['task.id']
     entries_df['team member'] = entries_df['user.username']
@@ -142,7 +144,7 @@ def aggregrate_task_data(tasks_and_entries_tuple):
     final_df = final_df.merge(tasks_df[["task start date", "task id"]], on="task id")
     final_df = final_df.merge(tasks_df[["task due date", "task id"]], on="task id")
 
-    print(final_df)
+    print(final_df.columns.tolist())
     return final_df
 def display_views(final_df):
     pass 
