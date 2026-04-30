@@ -121,7 +121,6 @@ def aggregrate_task_data(tasks_and_entries_tuple):
     entries_df['non-billable'] = np.where(entries_df['billable'] != True, entries_df['duration'],0)
     entries_df['billable_hours'] = np.where(entries_df['billable'] == True, entries_df['duration'], 0 )
     entries_df['total hours'] = entries_df[['non-billable', 'billable_hours']].sum(axis=1)
-    print(f"Total hours my guy {entries_df['total hours']}")
     entries_df['task name'] = entries_df['task.name']
     entries_df['task id'] = entries_df['task.id']
     entries_df['team member'] = entries_df['user.username']
@@ -143,12 +142,14 @@ def aggregrate_task_data(tasks_and_entries_tuple):
     final_df = final_df.merge(tasks_df[["time estimate", "task id"]], on="task id")
     final_df = final_df.merge(tasks_df[["task start date", "task id"]], on="task id")
     final_df = final_df.merge(tasks_df[["task due date", "task id"]], on="task id")
+    final_df["entry date"] = pd.to_datetime(final_df["entry date"])
 
-    print(final_df.columns.tolist())
+    print(f"D-TYPE {final_df["entry date"].dtype}")
     return final_df
 def display_views(final_df):
-    work_days = pd.Categorical(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], categories=["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], ordered=True)
-    work_days_df = pd.Categorical(work_days)
+    final_df['entry date'] = pd.Categorical(final_df['entry date'],  ordered=True)
+    print(f"AFTER {final_df['entry date']}")
+
     def view_one():
         team_members =  final_df.groupby("Team")["team member"].unique()
         team_estimated_hours_worked =  final_df.groupby("Team")["time estimate"].sum()
@@ -160,7 +161,6 @@ def display_views(final_df):
         over_capacity_percentage = round(((team_actual_hours_worked / total_hours ) * 100) - 100 )
         team_register_hours = final_df.groupby("Team")["total hours"].sum()
         
-        # days = dummy_data_keys.groupby("Team")["day"].agg(list)
         
 
     
