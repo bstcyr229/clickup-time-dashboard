@@ -29,7 +29,7 @@ def fetching_tasks():
     workspace_id = os.getenv("workspace_id")
     
     if workspace_id is None:
-        print("No workspace ID")
+        return ("No workspace ID")
     test_space_id = os.getenv("test_space")
     
     get_tasks_json = []
@@ -38,41 +38,43 @@ def fetching_tasks():
     tasks_and_entries_tuple = ()
 
     start_date = dt(2026, 4, 1, tzinfo=timezone.utc)
-    end_date = dt(2026, 4, 21, tzinfo=timezone.utc)
+    end_date = dt(2026, 5, 1, tzinfo=timezone.utc)
     unix_converter = 1000
     mileseconds_converter = 3600000
 
     get_user_teams_request = requests.get(f"https://api.clickup.com/api/v2/group?team_id={workspace_id }", headers=headers)
     if get_user_teams_request.status_code != 200:
-        print(f"User group request API call failed. ERROR CODE: {get_user_teams_request}")    
+        return (f"User group request API call failed. ERROR CODE: {get_user_teams_request}")    
     else:
         user_teams_json = get_user_teams_request.json().get("groups")
     if user_teams_json is None:
-        print("No user groups found")
+        return ("No user groups found")
     # This line will get all of the tasks in your ws, I am just configuring with a test space get_tasks = requests.get(f"https://api.clickup.com/api/v2/team/{workspace_id}/task", headers=headers")
     get_tasks_request= requests.get(f'https://api.clickup.com/api/v2/team/{workspace_id}/task?space_ids[]={test_space_id}',headers=headers) 
     
     if get_tasks_request.status_code != 200:
-        print(f"Task request API call failed. ERROR CODE: { get_tasks_request}")
+        return (f"Task request API call failed. ERROR CODE: { get_tasks_request}")
     else:
         get_tasks_json = get_tasks_request.json().get("tasks")
     
     
     start_date_ms = int(start_date.timestamp() * unix_converter)
-    end_date_ms = int(end_date.timestamp() * unix_converter)    
-    get_entries_from_before_due_and_start_dates = requests.get(f'https://api.clickup.com/api/v2/team/{workspace_id}/time_entries?start_date={start_date_ms}&end_date={end_date_ms}', headers=headers)
+    end_date_ms = int(end_date.timestamp() * unix_converter)
     
+    get_entries_from_before_due_and_start_dates = requests.get(f'https://api.clickup.com/api/v2/team/{workspace_id}/time_entries?start_date={start_date_ms}&end_date={end_date_ms}', headers=headers)
+    date_filtered_entries_json = get_entries_from_before_due_and_start_dates.json().get("data")
+
+
+
     if get_entries_from_before_due_and_start_dates.status_code != 200:
-        print(f"Date filtered entries request API call failed, ERROR CODE: {get_entries_from_before_due_and_start_dates}")
+        return (f"Date filtered entries request API call failed, ERROR CODE: {get_entries_from_before_due_and_start_dates}")
     else:
         date_filtered_entries_json = get_entries_from_before_due_and_start_dates.json().get("data")
-        print(get_entries_from_before_due_and_start_dates.json())
+        
 
         if date_filtered_entries is None:
-            print("No entries found")
+            return("No entries found")
         else:
-            print(f"LEN of get tasks json{len(get_tasks_json)}")
-            print(f"LEN of date_filtered_entries {len(date_filtered_entries)}")
             tasks_and_entries_tuple = (date_filtered_entries_json , get_tasks_json, user_teams_json)
             return tasks_and_entries_tuple
             
@@ -81,6 +83,7 @@ def aggregrate_task_data(tasks_and_entries_tuple):
     mileseconds_converter = 3600000
     
     entries_json = tasks_and_entries_tuple [0]
+    print(f"ENTRIES JSON {entries_json}")
     tasks_json = tasks_and_entries_tuple[1]
     user_groups_json = tasks_and_entries_tuple[2]
 
@@ -147,24 +150,24 @@ def aggregrate_task_data(tasks_and_entries_tuple):
     final_df = final_df.merge(tasks_df[["time_estimate", "task_id"]], on="task_id")
     final_df = final_df.merge(tasks_df[["task_start_date", "task_id"]], on="task_id")
     final_df = final_df.merge(tasks_df[["task_due_date", "task_id"]], on="task_id")
-    print(final_df[["entry_date", "task_name"]])
     final_df["entry_date"] = pd.to_datetime(final_df["entry_date"])
-
+    print(final_df[["entry_date", "task_name"]])
     return final_df
 def display_views(final_df):
-    final_df['entry_date'] = pd.Categorical(final_df['entry_date'],  ordered=True)
-    # print(f"AFTER {final_df['entry_date']}")
+    pass
+#     final_df['entry_date'] = pd.Categorical(final_df['entry_date'],  ordered=True)
+#     # print(f"AFTER {final_df['entry_date']}")
 
-    def view_one():
-        team_members =  final_df.groupby("Team")["team_member"].unique()
-        team_estimated_hours_worked =  final_df.groupby("Team")["time_estimate"].sum()
-        team_actual_hours_worked = final_df.groupby("Team")["actual_hours"].sum()
-        team_billable_hours = final_df.groupby("Team")["billable_hours"].sum()
+#     def view_one():
+#         team_members =  final_df.groupby("Team")["team_member"].unique()
+#         team_estimated_hours_worked =  final_df.groupby("Team")["time_estimate"].sum()
+#         team_actual_hours_worked = final_df.groupby("Team")["actual_hours"].sum()
+#         team_billable_hours = final_df.groupby("Team")["billable_hours"].sum()
         
-        total_hours = team_members.apply(len) * 40
-        over_capacity = total_hours < team_actual_hours_worked
-        over_capacity_percentage = round(((team_actual_hours_worked / total_hours ) * 100) - 100 )
-        team_register_hours = final_df.groupby("Team")["total_hours"].sum()
+#         total_hours = team_members.apply(len) * 40
+#         over_capacity = total_hours < team_actual_hours_worked
+#         over_capacity_percentage = round(((team_actual_hours_worked / total_hours ) * 100) - 100 )
+#         team_register_hours = final_df.groupby("Team")["total_hours"].sum()
         
         
 
@@ -209,4 +212,4 @@ def display_views(final_df):
     def view_three():
         pass
 
-display_views(aggregrate_task_data(fetching_tasks()))
+aggregrate_task_data(fetching_tasks())
