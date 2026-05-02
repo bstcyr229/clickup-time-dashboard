@@ -83,83 +83,83 @@ def aggregrate_task_data(tasks_and_entries_tuple):
 
     user_groups_df = pd.json_normalize(user_groups_json) 
     user_groups_df = user_groups_df.explode('members')
-    user_groups_df["team name"] = user_groups_df['name']
-    user_groups_df["team member"] = user_groups_df['members'].apply(lambda x: x.get("username") if isinstance(x,dict) and len(x) > 0 else None)
-    user_groups_df["team member id"] = user_groups_df['members'].apply(lambda x: x.get("id") if isinstance(x,dict) and len(x) > 0 else None)
-    user_groups_df["team member id"] = user_groups_df['team member id'].astype('Int64')
+    user_groups_df["team_name"] = user_groups_df['name']
+    user_groups_df["team_member"] = user_groups_df['members'].apply(lambda x: x.get("username") if isinstance(x,dict) and len(x) > 0 else None)
+    user_groups_df["team_member_id"] = user_groups_df['members'].apply(lambda x: x.get("id") if isinstance(x,dict) and len(x) > 0 else None)
+    user_groups_df["team_member_id"] = user_groups_df['team_member_id'].astype('Int64')
     user_groups_df_filtered = user_groups_df[[
-        'team name',
-        'team member',
-        'team member id',
+        'team_name',
+        'team_member',
+        'team_member_id',
     ]].copy 
     
     tasks_df = pd.json_normalize(tasks_json)
-    tasks_df['time estimate'] = tasks_df['time_estimate'].astype("Int64") / mileseconds_converter
+    tasks_df['time_estimate'] = tasks_df['time_estimate'].astype("Int64") / mileseconds_converter
     tasks_df['time_spent'] = tasks_df['time_spent'].astype("Int64") / mileseconds_converter
-    tasks_df['task start date'] = tasks_df['start_date'].apply( lambda x: dt.fromtimestamp(int(x) / unix_converter).date().isoformat() if x is not None else "No date found")
-    tasks_df['task due date'] = tasks_df['due_date'].apply( lambda x: dt.fromtimestamp(int(x) / unix_converter).date().isoformat() if x is not None else "No date found")
-    tasks_df["user id"] = tasks_df['assignees'].apply(lambda x: x[0].get("id") if isinstance(x,list) and len(x) > 0 else None)
-    tasks_df['team member'] = tasks_df['assignees'].apply(lambda x: x.get('username') if isinstance(x,dict) else None)
-    tasks_df['team member id'] = tasks_df['assignees'].apply(lambda x: x.get('id') if isinstance(x,dict) else None)
-    tasks_df['task id'] = tasks_df['id']
-    tasks_df['task name'] = tasks_df['name']
+    tasks_df['task_start_date'] = tasks_df['start_date'].apply( lambda x: dt.fromtimestamp(int(x) / unix_converter).date().isoformat() if x is not None else "No date found")
+    tasks_df['task_due_date'] = tasks_df['due_date'].apply( lambda x: dt.fromtimestamp(int(x) / unix_converter).date().isoformat() if x is not None else "No date found")
+    tasks_df["user_id"] = tasks_df['assignees'].apply(lambda x: x[0].get("id") if isinstance(x,list) and len(x) > 0 else None)
+    tasks_df['team_member'] = tasks_df['assignees'].apply(lambda x: x.get('username') if isinstance(x,dict) else None)
+    tasks_df['team_member_id'] = tasks_df['assignees'].apply(lambda x: x.get('id') if isinstance(x,dict) else None)
+    tasks_df['task_id'] = tasks_df['id']
+    tasks_df['task_name'] = tasks_df['name']
     
     task_df_filtered = tasks_df[[
-        'task id',
-        'task name', 
-        'team member',
-        'team member id',
-        'time estimate',
+        'task_id',
+        'task_name', 
+        'team_member',
+        'team_member_id',
+        'time_estimate',
         'time_spent',
-        'task start date', 
-        'task due date'
+        'task_start_date', 
+        'task_due_date'
     ]].copy()
 
     entries_df = pd.json_normalize(entries_json)
     entries_df['duration'] = entries_df['duration'].astype('Int64') / mileseconds_converter   
-    entries_df['entry date'] = entries_df['at'].apply( lambda x: dt.fromtimestamp(int(x) / unix_converter).date().isoformat() if x is not None else "No date found") # Getting the date for each entry
-    entries_df['non-billable'] = np.where(entries_df['billable'] != True, entries_df['duration'],0)
+    entries_df['entry_date'] = entries_df['at'].apply( lambda x: dt.fromtimestamp(int(x) / unix_converter).date().isoformat() if x is not None else "No date found") # Getting the date for each entry
+    entries_df['non_billable'] = np.where(entries_df['billable'] != True, entries_df['duration'],0)
     entries_df['billable_hours'] = np.where(entries_df['billable'] == True, entries_df['duration'], 0 )
-    entries_df['total hours'] = entries_df[['non-billable', 'billable_hours']].sum(axis=1)
-    entries_df['task name'] = entries_df['task.name']
-    entries_df['task id'] = entries_df['task.id']
-    entries_df['team member'] = entries_df['user.username']
-    entries_df['team member id'] = entries_df['user.id'].astype("Int64")
+    entries_df['total_hours'] = entries_df[['non_billable', 'billable_hours']].sum(axis=1)
+    entries_df['task_name'] = entries_df['task.name']
+    entries_df['task_id'] = entries_df['task.id']
+    entries_df['team_member'] = entries_df['user.username']
+    entries_df['team_member_id'] = entries_df['user.id'].astype("Int64")
     
 
     final_df = entries_df[[
-        'team member',
-        'team member id',
-        'task name',
-        'task id',
-        'entry date',
+        'team_member',
+        'team_member_id',
+        'task_name',
+        'task_id',
+        'entry_date',
         'billable_hours',
-        'non-billable'
+        'non_billable'
     ]].copy()
     
     
-    final_df = final_df.merge(user_groups_df[["team name", "team member id"]] , on="team member id")
-    final_df = final_df.merge(tasks_df[["time estimate", "task id"]], on="task id")
-    final_df = final_df.merge(tasks_df[["task start date", "task id"]], on="task id")
-    final_df = final_df.merge(tasks_df[["task due date", "task id"]], on="task id")
-    final_df["entry date"] = pd.to_datetime(final_df["entry date"])
+    final_df = final_df.merge(user_groups_df[["team_name", "team_member_id"]] , on="team_member_id")
+    final_df = final_df.merge(tasks_df[["time_estimate", "task_id"]], on="task_id")
+    final_df = final_df.merge(tasks_df[["task_start_date", "task_id"]], on="task_id")
+    final_df = final_df.merge(tasks_df[["task_due_date", "task_id"]], on="task_id")
+    print(final_df[["entry_date", "task_name"]])
+    final_df["entry_date"] = pd.to_datetime(final_df["entry_date"])
 
-    print(f"D-TYPE {final_df["entry date"].dtype}")
     return final_df
 def display_views(final_df):
-    final_df['entry date'] = pd.Categorical(final_df['entry date'],  ordered=True)
-    print(f"AFTER {final_df['entry date']}")
+    final_df['entry_date'] = pd.Categorical(final_df['entry_date'],  ordered=True)
+    # print(f"AFTER {final_df['entry_date']}")
 
     def view_one():
-        team_members =  final_df.groupby("Team")["team member"].unique()
-        team_estimated_hours_worked =  final_df.groupby("Team")["time estimate"].sum()
+        team_members =  final_df.groupby("Team")["team_member"].unique()
+        team_estimated_hours_worked =  final_df.groupby("Team")["time_estimate"].sum()
         team_actual_hours_worked = final_df.groupby("Team")["actual_hours"].sum()
         team_billable_hours = final_df.groupby("Team")["billable_hours"].sum()
         
         total_hours = team_members.apply(len) * 40
         over_capacity = total_hours < team_actual_hours_worked
         over_capacity_percentage = round(((team_actual_hours_worked / total_hours ) * 100) - 100 )
-        team_register_hours = final_df.groupby("Team")["total hours"].sum()
+        team_register_hours = final_df.groupby("Team")["total_hours"].sum()
         
         
 
