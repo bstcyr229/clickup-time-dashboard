@@ -66,9 +66,13 @@ def fetching_tasks():
         print(f"Date filtered entries request API call failed, ERROR CODE: {get_entries_from_before_due_and_start_dates}")
     else:
         date_filtered_entries_json = get_entries_from_before_due_and_start_dates.json().get("data")
+        print(get_entries_from_before_due_and_start_dates.json())
+
         if date_filtered_entries is None:
             print("No entries found")
         else:
+            print(f"LEN of get tasks json{len(get_tasks_json)}")
+            print(f"LEN of date_filtered_entries {len(date_filtered_entries)}")
             tasks_and_entries_tuple = (date_filtered_entries_json , get_tasks_json, user_teams_json)
             return tasks_and_entries_tuple
             
@@ -80,6 +84,7 @@ def aggregrate_task_data(tasks_and_entries_tuple):
     tasks_json = tasks_and_entries_tuple[1]
     user_groups_json = tasks_and_entries_tuple[2]
 
+    
 
     user_groups_df = pd.json_normalize(user_groups_json) 
     user_groups_df = user_groups_df.explode('members')
