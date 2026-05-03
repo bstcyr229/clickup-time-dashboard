@@ -63,6 +63,7 @@ def fetching_tasks():
     
     get_entries_from_before_due_and_start_dates = requests.get(f'https://api.clickup.com/api/v2/team/{workspace_id}/time_entries?start_date={start_date_ms}&end_date={end_date_ms}', headers=headers)
     date_filtered_entries_json = get_entries_from_before_due_and_start_dates.json().get("data")
+    print(f"date_filtered_entries_json AFTER API CALLlen( {date_filtered_entries_json})")
 
 
 
@@ -83,7 +84,7 @@ def aggregrate_task_data(tasks_and_entries_tuple):
     mileseconds_converter = 3600000
     
     entries_json = tasks_and_entries_tuple [0]
-    print(f"ENTRIES JSON {entries_json}")
+    print(f"ENTRIES JSON AFTER TUPLE {len(entries_json)}")
     tasks_json = tasks_and_entries_tuple[1]
     user_groups_json = tasks_and_entries_tuple[2]
 
@@ -151,7 +152,7 @@ def aggregrate_task_data(tasks_and_entries_tuple):
     final_df = final_df.merge(tasks_df[["task_start_date", "task_id"]], on="task_id")
     final_df = final_df.merge(tasks_df[["task_due_date", "task_id"]], on="task_id")
     final_df["entry_date"] = pd.to_datetime(final_df["entry_date"])
-    print(final_df[["entry_date", "task_name"]])
+    # print(final_df[["entry_date", "task_name"]])
     return final_df
 def display_views(final_df):
     pass
