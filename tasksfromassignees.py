@@ -1,10 +1,4 @@
-#NEXT- Construct view one based on entries and user groups (teams in ClickUp UI)
-#Evening session 4/22/26
-    # type cast my task_df columns to int so the milisecond converter will work 
 
-
-
-import dummy_data as gdd
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -12,6 +6,8 @@ import altair as alt
 import requests
 import os
 import json 
+import holidays 
+
 from datetime import datetime as dt, timedelta , timezone 
 
 from dotenv import load_dotenv
@@ -39,6 +35,18 @@ def fetching_tasks():
 
     start_date = dt(2026, 4, 1, tzinfo=timezone.utc)
     end_date = dt(2026, 5, 1, tzinfo=timezone.utc)
+
+    date_differences = end_date - start_date
+
+    for day in date_differences:
+        print(day)
+    
+    
+    
+    date_differences = date_differences.days
+    
+    
+    
     unix_converter = 1000
     mileseconds_converter = 3600000
 
@@ -76,7 +84,8 @@ def fetching_tasks():
         if date_filtered_entries is None:
             return("No entries found")
         else:
-            tasks_and_entries_tuple = (date_filtered_entries_json , get_tasks_json, user_teams_json)
+            tasks_and_entries_tuple = (date_filtered_entries_json , get_tasks_json, user_teams_json, date_differences)
+            
             return tasks_and_entries_tuple
             
 def aggregrate_task_data(tasks_and_entries_tuple):
@@ -86,7 +95,7 @@ def aggregrate_task_data(tasks_and_entries_tuple):
     entries_json = tasks_and_entries_tuple [0]
     tasks_json = tasks_and_entries_tuple[1]
     user_groups_json = tasks_and_entries_tuple[2]
-
+    date_differences = tasks_and_entries_tuple[3]
     
 
     user_groups_df = pd.json_normalize(user_groups_json) 
@@ -150,15 +159,19 @@ def aggregrate_task_data(tasks_and_entries_tuple):
     final_df = final_df.merge(tasks_df[["time_estimate", "task_id"]], on="task_id")
     final_df = final_df.merge(tasks_df[["task_start_date", "task_id"]], on="task_id")
     final_df = final_df.merge(tasks_df[["task_due_date", "task_id"]], on="task_id")
-    return final_df
-def display_views(final_df):
+    dates_and_final_df = (final_df , date_differences)
+    return dates_and_final_df 
+
+def display_views(dates_and_final_df):
+    final_df = dates_and_final_df[0]
+    date_difference = dates_and_final_df[1]
     final_df = final_df.sort_values(by='entry_date')
 
-#     def view_one():
-#         team_members =  final_df.groupby("Team")["team_member"].unique()
-#         team_estimated_hours_worked =  final_df.groupby("Team")["time_estimate"].sum()
-#         team_actual_hours_worked = final_df.groupby("Team")["actual_hours"].sum()
-#         team_billable_hours = final_df.groupby("Team")["billable_hours"].sum()
+    def view_one():
+        team_members =  final_df.groupby("team_name")["team_member"].unique()
+        team_estimated_hours_worked =  final_df.groupby("team_name")["time_estimate"].sum()
+        team_actual_hours_worked = final_df.groupby("team_name")["actual_hours"].sum()
+        team_billable_hours = final_df.groupby("team_name")["billable_hours"].sum()
         
 #         total_hours = team_members.apply(len) * 40
 #         over_capacity = total_hours < team_actual_hours_worked
