@@ -56,15 +56,16 @@ def fetching_tasks():
         return (f"Task request API call failed. ERROR CODE: { get_tasks_request}")
     else:
         get_tasks_json = get_tasks_request.json().get("tasks")
-    
+        
     
     start_date_ms = int(start_date.timestamp() * unix_converter)
     end_date_ms = int(end_date.timestamp() * unix_converter)
     
     get_entries_from_before_due_and_start_dates = requests.get(f'https://api.clickup.com/api/v2/team/{workspace_id}/time_entries?start_date={start_date_ms}&end_date={end_date_ms}', headers=headers)
+    
     date_filtered_entries_json = get_entries_from_before_due_and_start_dates.json().get("data")
-    print(f"date_filtered_entries_json AFTER API CALLlen( {date_filtered_entries_json})")
-
+    raw_entries_json = get_entries_from_before_due_and_start_dates.json().keys()
+    
 
 
     if get_entries_from_before_due_and_start_dates.status_code != 200:
@@ -72,7 +73,6 @@ def fetching_tasks():
     else:
         date_filtered_entries_json = get_entries_from_before_due_and_start_dates.json().get("data")
         
-
         if date_filtered_entries is None:
             return("No entries found")
         else:
@@ -84,7 +84,6 @@ def aggregrate_task_data(tasks_and_entries_tuple):
     mileseconds_converter = 3600000
     
     entries_json = tasks_and_entries_tuple [0]
-    print(f"ENTRIES JSON AFTER TUPLE {len(entries_json)}")
     tasks_json = tasks_and_entries_tuple[1]
     user_groups_json = tasks_and_entries_tuple[2]
 
@@ -126,7 +125,7 @@ def aggregrate_task_data(tasks_and_entries_tuple):
 
     entries_df = pd.json_normalize(entries_json)
     entries_df['duration'] = entries_df['duration'].astype('Int64') / mileseconds_converter   
-    entries_df['entry_date'] = entries_df['at'].apply( lambda x: dt.fromtimestamp(int(x) / unix_converter).date().isoformat() if x is not None else "No date found") # Getting the date for each entry
+    entries_df['entry_date'] = entries_df['start'].apply( lambda x: dt.fromtimestamp(int(x) / unix_converter).date().isoformat() if x is not None else "No date found") # Getting the date for each entry
     entries_df['non_billable'] = np.where(entries_df['billable'] != True, entries_df['duration'],0)
     entries_df['billable_hours'] = np.where(entries_df['billable'] == True, entries_df['duration'], 0 )
     entries_df['total_hours'] = entries_df[['non_billable', 'billable_hours']].sum(axis=1)
@@ -151,13 +150,9 @@ def aggregrate_task_data(tasks_and_entries_tuple):
     final_df = final_df.merge(tasks_df[["time_estimate", "task_id"]], on="task_id")
     final_df = final_df.merge(tasks_df[["task_start_date", "task_id"]], on="task_id")
     final_df = final_df.merge(tasks_df[["task_due_date", "task_id"]], on="task_id")
-    final_df["entry_date"] = pd.to_datetime(final_df["entry_date"])
-    # print(final_df[["entry_date", "task_name"]])
     return final_df
 def display_views(final_df):
-    pass
-#     final_df['entry_date'] = pd.Categorical(final_df['entry_date'],  ordered=True)
-#     # print(f"AFTER {final_df['entry_date']}")
+    final_df = final_df.sort_values(by='entry_date')
 
 #     def view_one():
 #         team_members =  final_df.groupby("Team")["team_member"].unique()
@@ -213,4 +208,4 @@ def display_views(final_df):
     def view_three():
         pass
 
-aggregrate_task_data(fetching_tasks())
+display_views(aggregrate_task_data(fetching_tasks()))
