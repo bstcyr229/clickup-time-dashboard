@@ -39,20 +39,13 @@ def fetching_tasks():
 
 
     date_differences = end_date - start_date
-    date_differences = date_differences.days
+    total_work_days = date_differences.days
     
     date_differences_delta = timedelta(days=date_differences)
     date_differences_delta = range(date_differences)
     for day in date_differences_delta:
         if (start_date + timedelta(days=day)).date().weekday() >= 5 or (start_date + timedelta(days=day)).date() in us_holidays:
-            print ("Weekned day")
-        else:
-            print ("Weekday")  
-    
-    
-    
-    
-    
+            total_work_days -= 1   
     
     unix_converter = 1000
     mileseconds_converter = 3600000
@@ -91,7 +84,7 @@ def fetching_tasks():
         if date_filtered_entries is None:
             return("No entries found")
         else:
-            tasks_and_entries_tuple = (date_filtered_entries_json , get_tasks_json, user_teams_json, date_differences)
+            tasks_and_entries_tuple = (date_filtered_entries_json , get_tasks_json, user_teams_json, total_work_days)
             
             return tasks_and_entries_tuple
             
@@ -102,7 +95,7 @@ def aggregrate_task_data(tasks_and_entries_tuple):
     entries_json = tasks_and_entries_tuple [0]
     tasks_json = tasks_and_entries_tuple[1]
     user_groups_json = tasks_and_entries_tuple[2]
-    date_differences = tasks_and_entries_tuple[3]
+    total_work_days = tasks_and_entries_tuple[3]
     
 
     user_groups_df = pd.json_normalize(user_groups_json) 
@@ -166,12 +159,12 @@ def aggregrate_task_data(tasks_and_entries_tuple):
     final_df = final_df.merge(tasks_df[["time_estimate", "task_id"]], on="task_id")
     final_df = final_df.merge(tasks_df[["task_start_date", "task_id"]], on="task_id")
     final_df = final_df.merge(tasks_df[["task_due_date", "task_id"]], on="task_id")
-    dates_and_final_df = (final_df , date_differences)
+    dates_and_final_df = (final_df , total_work_days)
     return dates_and_final_df 
 
 def display_views(dates_and_final_df):
     final_df = dates_and_final_df[0]
-    date_difference = dates_and_final_df[1]
+    total_work_days = dates_and_final_df[1]
     final_df = final_df.sort_values(by='entry_date')
 
     def view_one():
@@ -180,10 +173,10 @@ def display_views(dates_and_final_df):
         team_actual_hours_worked = final_df.groupby("team_name")["actual_hours"].sum()
         team_billable_hours = final_df.groupby("team_name")["billable_hours"].sum()
         
-#         total_hours = team_members.apply(len) * 40
-#         over_capacity = total_hours < team_actual_hours_worked
-#         over_capacity_percentage = round(((team_actual_hours_worked / total_hours ) * 100) - 100 )
-#         team_register_hours = final_df.groupby("Team")["total_hours"].sum()
+        total_hours = team_members.apply(len) * total_work_days
+        over_capacity = total_hours < team_actual_hours_worked
+        over_capacity_percentage = round(((team_actual_hours_worked / total_hours ) * 100) - 100 )
+        team_register_hours = final_df.groupby("team_name")["actual_hours"].sum()
         
         
 
