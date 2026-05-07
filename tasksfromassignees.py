@@ -35,15 +35,22 @@ def fetching_tasks():
 
     start_date = dt(2026, 4, 1, tzinfo=timezone.utc)
     end_date = dt(2026, 5, 1, tzinfo=timezone.utc)
+    us_holidays = holidays.US()
+
 
     date_differences = end_date - start_date
-
-    for day in date_differences:
-        print(day)
-    
-    
-    
     date_differences = date_differences.days
+    
+    date_differences_delta = timedelta(days=date_differences)
+    date_differences_delta = range(date_differences)
+    for day in date_differences_delta:
+        if (start_date + timedelta(days=day)).date().weekday() >= 5 or (start_date + timedelta(days=day)).date() in us_holidays:
+            print ("Weekned day")
+        else:
+            print ("Weekday")  
+    
+    
+    
     
     
     
