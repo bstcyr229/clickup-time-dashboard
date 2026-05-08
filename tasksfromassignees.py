@@ -180,7 +180,7 @@ def display_views(dates_and_final_df):
         team_actual_hours_worked = final_df.groupby("team_name")["actual_hours"].sum()
         team_billable_hours = final_df.groupby("team_name")["billable_hours"].sum()
         
-        total_hours = team_members.apply(len) * (total_work_days / work_day_duration) 
+        total_hours = team_members.apply(len) * (total_work_days * work_day_duration) 
         over_capacity = total_hours < team_actual_hours_worked
         over_capacity_percentage = round(((team_actual_hours_worked / total_hours ) * rounder) - rounder)
         team_register_hours = final_df.groupby("team_name")["actual_hours"].sum()
