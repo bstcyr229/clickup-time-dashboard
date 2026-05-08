@@ -41,8 +41,9 @@ def fetching_tasks():
     date_differences = end_date - start_date
     total_work_days = date_differences.days
     
-    date_differences_delta = timedelta(days=date_differences)
-    date_differences_delta = range(date_differences)
+    
+    date_differences_delta = range(total_work_days)
+    
     for day in date_differences_delta:
         if (start_date + timedelta(days=day)).date().weekday() >= 5 or (start_date + timedelta(days=day)).date() in us_holidays:
             total_work_days -= 1   
@@ -168,49 +169,37 @@ def display_views(dates_and_final_df):
     final_df = final_df.sort_values(by='entry_date')
 
     def view_one():
+        work_day_duration = 8
+        rounder = 100 
         team_members =  final_df.groupby("team_name")["team_member"].unique()
         team_estimated_hours_worked =  final_df.groupby("team_name")["time_estimate"].sum()
         team_actual_hours_worked = final_df.groupby("team_name")["actual_hours"].sum()
         team_billable_hours = final_df.groupby("team_name")["billable_hours"].sum()
         
-        total_hours = team_members.apply(len) * total_work_days
+        total_hours = team_members.apply(len) * (total_work_days / work_day_duration) 
         over_capacity = total_hours < team_actual_hours_worked
-        over_capacity_percentage = round(((team_actual_hours_worked / total_hours ) * 100) - 100 )
+        over_capacity_percentage = round(((team_actual_hours_worked / total_hours ) * rounder) - rounder)
         team_register_hours = final_df.groupby("team_name")["actual_hours"].sum()
         
         
+        teams = final_df["team_name"].unique()
+        cols = st.columns(len(teams))
 
+        for i, team in enumerate(teams):
+            with cols[i]:
+                st.metric(label=f"{team} Capacity", value=total_hours[team])
+        for i, team in enumerate(teams):
+            with cols[i]:
+                st.metric(label=f"{team} Actual Hours Worked", value=team_actual_hours_worked[team], delta=f"{over_capacity_percentage['Team One']:+.2f}%")
+        for i, team in enumerate(teams):
+            with cols[i]:
+                st.metric(label=f"{teams}Billable to Actual", value=f"{(team_billable_hours['team'] / team_actual_hours_worked['Team One']):.2f}")    
     
-#     col1, col2, col3 = st.columns(3)
-#     col4, col5, col6 = st.columns(3)
-#     col7, col8, col9 = st.columns(3)
-    
-#     with col1:
-#         st.metric(label="Team 1 Total Capacity", value=f"{total_hours['Team One']}")
-#     with col2:
-#         st.metric(label="Team 2 Total Capacity", value=f"{total_hours['Team Two']}")
-#     with col3:
-#         st.metric(label="Team 3 Total Capacity", value=f"{total_hours['Team Three']}")
-#     with col4:
-#         st.metric(label="Team 1 Actual Hours Worked", value=f"{team_actual_hours_worked['Team One']}", delta=f"{over_capacity_percentage['Team One']:+.2f}%")
-#     with col5:
-#         st.metric(label="Team 2 Actual Hours Worked", value=f"{team_actual_hours_worked['Team Two']}", delta=f"{over_capacity_percentage['Team Two']:+.2f}%")
-#     with col6:
-#         st.metric(label="Team 3 Actual Hours Worked", value=f"{team_actual_hours_worked['Team Three']}", delta=f"{over_capacity_percentage['Team Three']:+.2f}%")
-#     with col7:
-#         st.metric(label="Team 1 Billable to Actual", value=f"{(team_billable_hours['Team One'] / team_actual_hours_worked['Team One']):.2f}")
-#     with col8:
-#         st.metric(label="Team 2 Billable to Actual", value=f"{(team_billable_hours['Team Two'] / team_actual_hours_worked['Team Two']):.2f}")
-#     with col9:
-#         st.metric(label="Team 3 Billable to Actual", value=f"{team_billable_hours['Team Three']/ team_actual_hours_worked['Team Three']:.2f}")
-    
-    
-    
-#     hours_worked_by_team_and_day = pd.DataFrame({"Estimated Hours Worked": team_estimated_hours_worked, "Actual Hours Worked": team_actual_hours_worked, "Billable Hours Worked": team_billable_hours, "Overcapacity":over_capacity})
-#     st.title("Team View")
-#     st.dataframe(data= hours_worked_by_team_and_day)
-    
-#     hours_worked_by_team_and_day = pd.DataFrame({ "Estimated Hours Worked": team_estimated_hours_worked, "Actual Hours Worked": team_actual_hours_worked, "Billable Hours Worked": team_billable_hours, "Overcapacity":over_capacity})
+        hours_worked_by_team_and_day = pd.DataFrame({"Estimated Hours Worked": team_estimated_hours_worked, "Actual Hours Worked": team_actual_hours_worked, "Billable Hours Worked": team_billable_hours, "Overcapacity":over_capacity})
+        st.title("Team View")
+        st.dataframe(data= hours_worked_by_team_and_day)
+        
+        hours_worked_by_team_and_day = pd.DataFrame({ "Estimated Hours Worked": team_estimated_hours_worked, "Actual Hours Worked": team_actual_hours_worked, "Billable Hours Worked": team_billable_hours, "Overcapacity":over_capacity})
     
 #     days_seperated_for_graph = dummy_data_keys.groupby(["Team", "day"])["actual_hours"].sum().unstack().transpose().reset_index()
 #     st.write("Days to Hours Worked by Team")
