@@ -138,7 +138,7 @@ def aggregrate_task_data(tasks_and_entries_tuple):
     entries_df['entry_date'] = entries_df['start'].apply( lambda x: dt.fromtimestamp(int(x) / unix_converter).date().isoformat() if x is not None else "No date found") # Getting the date for each entry
     entries_df['non_billable'] = np.where(entries_df['billable'] != True, entries_df['duration'],0)
     entries_df['billable_hours'] = np.where(entries_df['billable'] == True, entries_df['duration'], 0 )
-    entries_df['total_hours'] = entries_df[['non_billable', 'billable_hours']].sum(axis=1)
+    entries_df['actual_hours'] = entries_df[['non_billable', 'billable_hours']].sum(axis=1)
     entries_df['task_name'] = entries_df['task.name']
     entries_df['task_id'] = entries_df['task.id']
     entries_df['team_member'] = entries_df['user.username']
@@ -152,7 +152,8 @@ def aggregrate_task_data(tasks_and_entries_tuple):
         'task_id',
         'entry_date',
         'billable_hours',
-        'non_billable'
+        'non_billable',
+        'actual_hours'
     ]].copy()
     
     
@@ -167,6 +168,9 @@ def display_views(dates_and_final_df):
     final_df = dates_and_final_df[0]
     total_work_days = dates_and_final_df[1]
     final_df = final_df.sort_values(by='entry_date')
+
+    
+
 
     def view_one():
         work_day_duration = 8
@@ -190,10 +194,10 @@ def display_views(dates_and_final_df):
                 st.metric(label=f"{team} Capacity", value=total_hours[team])
         for i, team in enumerate(teams):
             with cols[i]:
-                st.metric(label=f"{team} Actual Hours Worked", value=team_actual_hours_worked[team], delta=f"{over_capacity_percentage['Team One']:+.2f}%")
+                st.metric(label=f"{team} Actual Hours Worked", value=team_actual_hours_worked[team], delta=f"{over_capacity_percentage[team]:+.2f}%")
         for i, team in enumerate(teams):
             with cols[i]:
-                st.metric(label=f"{teams}Billable to Actual", value=f"{(team_billable_hours['team'] / team_actual_hours_worked['Team One']):.2f}")    
+                st.metric(label=f"{teams}Billable to Actual", value=f"{(team_billable_hours[team] / team_actual_hours_worked[team]):.2f}")    
     
         hours_worked_by_team_and_day = pd.DataFrame({"Estimated Hours Worked": team_estimated_hours_worked, "Actual Hours Worked": team_actual_hours_worked, "Billable Hours Worked": team_billable_hours, "Overcapacity":over_capacity})
         st.title("Team View")
@@ -201,13 +205,35 @@ def display_views(dates_and_final_df):
         
         hours_worked_by_team_and_day = pd.DataFrame({ "Estimated Hours Worked": team_estimated_hours_worked, "Actual Hours Worked": team_actual_hours_worked, "Billable Hours Worked": team_billable_hours, "Overcapacity":over_capacity})
     
-#     days_seperated_for_graph = dummy_data_keys.groupby(["Team", "day"])["actual_hours"].sum().unstack().transpose().reset_index()
-#     st.write("Days to Hours Worked by Team")
-#     st.area_chart(data=days_seperated_for_graph, x="day", y=["Team One", "Team Two", "Team Three"], use_container_width=True) 
+        days_seperated_for_graph = final_df.groupby(["team_name", "entry_date"])["actual_hours"].sum().unstack().transpose().reset_index()
+        st.write("Days to Hours Worked by Team")
+        st.area_chart(data=days_seperated_for_graph, x='entry_date', y=[team], use_container_width=True) 
 
     def view_two():
         pass
     def view_three():
         pass
+    genre = st.radio(
+    "Which view would you like to see",
+    ["View One: Team View", "View Two: View by Assignee", "View Three: Project/Task View"],
+    index=None,
+)
+
+
+    if genre == None:
+        st.write("Please select a view")
+
+
+    elif genre == "View One: Team View":
+        view_one() 
+
+    elif genre == "View Two: View by Assignee":
+        view_two() 
+
+    elif genre == "View Three: Project/Task View":
+        view_three()
+    else: 
+        st.write("You selected:", genre)
+    
 
 display_views(aggregrate_task_data(fetching_tasks()))
