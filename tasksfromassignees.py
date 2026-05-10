@@ -115,9 +115,9 @@ def aggregrate_task_data(tasks_and_entries_tuple):
     tasks_df = pd.json_normalize(tasks_json)
     tasks_df['time_estimate'] = tasks_df['time_estimate'].astype("Int64") / mileseconds_converter
     tasks_df['time_spent'] = tasks_df['time_spent'].astype("Int64") / mileseconds_converter
-    tasks_df['task_start_date'] = tasks_df['start_date'].apply( lambda x: dt.fromtimestamp(int(x) / unix_converter).date().isoformat() if x is not None else "No date found")
-    tasks_df['task_due_date'] = tasks_df['due_date'].apply( lambda x: dt.fromtimestamp(int(x) / unix_converter).date().isoformat() if x is not None else "No date found")
-    tasks_df["user_id"] = tasks_df['assignees'].apply(lambda x: x[0].get("id") if isinstance(x,list) and len(x) > 0 else None)
+    tasks_df['task_start_date'] = tasks_df['start_date'].apply( lambda x: dt.fromtimestamp(int(x) / unix_converter).date().isoformat() if x is not None and pd.notna(x) else "No date found")
+    tasks_df['task_due_date'] = tasks_df['due_date'].apply( lambda x: dt.fromtimestamp(int(x) / unix_converter).date().isoformat() if x is not None and pd.notna(x) else "No date found")
+    tasks_df["user_id"] = tasks_df['assignees'].apply(lambda x: x[0].get("id") if isinstance(x,list) and len(x) > 0 else None )
     tasks_df['team_member'] = tasks_df['assignees'].apply(lambda x: x.get('username') if isinstance(x,dict) else None)
     tasks_df['team_member_id'] = tasks_df['assignees'].apply(lambda x: x.get('id') if isinstance(x,dict) else None)
     tasks_df['task_id'] = tasks_df['id']
@@ -251,7 +251,37 @@ def display_views(dates_and_final_df):
         ).transform_fold(["Estimated", "Actual", "Billable"], as_=["variable", "value"])
         st.altair_chart(chart, use_container_width=True)
     def view_three():
-        pass
+        tasks_for_view_three = final_df["task_name"]
+        task_ids_for_view_three = final_df["task_id"]
+        task_estimated_hours = final_df["time_estimate"]
+        task_actual_hours = final_df["actual_hours"]
+        task_assignee = final_df["team_member"]
+        task_to_billable = final_df["billable_hours"]
+        table_for_view_three = pd.DataFrame({"Tasks": tasks_for_view_three, "Task Id": task_ids_for_view_three, "Assignee":task_assignee, "Estimated Hours": task_estimated_hours, "Actual Hours":task_actual_hours,"Billable":task_to_billable, }).set_index("Tasks")
+        table_for_chart_three = pd.DataFrame({"Tasks": tasks_for_view_three, "Task Id": task_ids_for_view_three, "Assignee":task_assignee, "Estimated Hours": task_estimated_hours, "Actual Hours":task_actual_hours,"Billable":task_to_billable, })
+        st.title("View by Tasks")
+    
+        st.title("Task Metrics at a Glance")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+                st.metric(label="Average Estimated Hours per Task", value=f"{task_estimated_hours.mean():.2f}")
+        with col2:
+                st.metric(label="Average Actual Hours per Task", value=f"{task_actual_hours.mean():.2f}")
+        with col3:
+                st.metric(label="Average Billable Hours per Task", value=f"{task_to_billable.mean():.2f}")
+        chart = alt.Chart(table_for_chart_three).mark_bar().encode( 
+                x=alt.X("Tasks:N"),
+                y=alt.Y("value:Q"),
+                color=alt.Color("variable:N", scale=alt.Scale(domain=["Estimated Hours", "Actual Hours", "Billable"] , range=["#1f77b4", "#ff7f0e", "#2ca02c"])),
+                xOffset="variable:N").transform_fold(["Estimated Hours", "Actual Hours","Billable"], as_=["variable", "value"])
+        st.dataframe(table_for_view_three)
+        st.title("Tasks: Estimated, Actual and Billable Hours")
+        st.altair_chart(chart, use_container_width=True)
+    
+    # user_input = ""
+    # user_input = st.text_input(label="Please input date: Year, Month, Day")
+
+
     genre = st.radio(
     "Which view would you like to see",
     ["View One: Team View", "View Two: View by Assignee", "View Three: Project/Task View"],
