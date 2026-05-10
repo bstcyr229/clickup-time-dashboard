@@ -46,7 +46,8 @@ def fetching_tasks():
     
     for day in date_differences_delta:
         if (start_date + timedelta(days=day)).date().weekday() >= 5 or (start_date + timedelta(days=day)).date() in us_holidays:
-            total_work_days -= 1   
+            total_work_days -= 1
+
     
     unix_converter = 1000
     mileseconds_converter = 3600000
@@ -173,6 +174,7 @@ def display_views(dates_and_final_df):
 
 
     def view_one():
+        #Team View 
         work_day_duration = 8
         rounder = 100 
         team_members =  final_df.groupby("team_name")["team_member"].unique()
@@ -210,7 +212,44 @@ def display_views(dates_and_final_df):
         st.area_chart(data=days_seperated_for_graph, x='entry_date', y=[team], use_container_width=True) 
 
     def view_two():
-        pass
+        #Staff member drill down 
+        team_member_estimated_hours_worked = final_df.groupby("team_member")["time_estimate"].sum()
+        team_member_actual_hours_worked = final_df.groupby("team_member")["actual_hours"].sum()
+        team_member_total_hours_worked = final_df.groupby("team_member")["actual_hours"].sum()
+        capacity_check = team_member_total_hours_worked > (total_work_days * 8)
+        team_member_tasks_worked = final_df.groupby("team_member")["task_name"].agg(list)
+        data_by_team_member = pd.DataFrame({"Tasks": team_member_tasks_worked, "Estimated Hours": team_member_estimated_hours_worked, "Actual Hours Worked": team_member_actual_hours_worked, "Billable Hours Worked":final_df.groupby("team_member")['billable_hours'].sum(), "Overcapacity": capacity_check})
+        st.title("View by Employee")
+        st.title("Team Member Metrics at a Glance")
+        
+        team_members = final_df["team_member"].unique()
+        cols = st.columns(len(team_members))
+
+
+        for i, team_member in enumerate(team_members):
+            with cols[i]:
+                st.metric(label="Team Member Average Estimated Hours Worked", value=f"{team_member_estimated_hours_worked.mean():.2f}")
+        for i, team_member in enumerate(team_members):
+            with cols[i]:
+                st.metric(label="Team Member Average Actual Hours Worked", value=f"{team_member_actual_hours_worked.mean():.2f}")
+        for i, team_member in enumerate(team_members):
+            with cols[i]:
+                st.metric(label="Team Member Average Billable Hours Worked", value=f"{(final_df.groupby('team_member')['billable_hours'].sum()).mean():.2f}")   
+        
+        st.dataframe(data_by_team_member , use_container_width=True)
+        
+        
+        chart_data = pd.DataFrame({"Assignee": final_df.groupby("team_member").first().index, "Estimated": team_member_estimated_hours_worked, "Actual": team_member_actual_hours_worked, "Billable": final_df.groupby("team_member")['billable_hours'].sum()}).reset_index()
+        st.title("Team Memebers: Estimated, Actual and Billable Hours")
+        color_scale = alt.Scale(domain=["Estimated", "Actual", "Billable"], range=["#1f77b4", "#ff7f0e", "#2ca02c"])
+
+        chart = alt.Chart(chart_data).mark_bar().encode(
+            x=alt.X("Assignee:N"),
+            y=alt.Y("value:Q"),
+            color=alt.Color("variable:N", scale=color_scale),
+            xOffset="variable:N"
+        ).transform_fold(["Estimated", "Actual", "Billable"], as_=["variable", "value"])
+        st.altair_chart(chart, use_container_width=True)
     def view_three():
         pass
     genre = st.radio(
