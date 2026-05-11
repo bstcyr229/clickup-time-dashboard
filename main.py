@@ -1,414 +1,316 @@
-# Summary of the Three Views
-#View One: Which of your teams is over or under capacity right now
-#View Two: A deep dive on each of the members of your team, who is under capacity and who isn't
-#View Three: An analysis of individual tasks, time spent vs time estimated 
-#ClickUp API documentation link https://developer.clickup.com/reference/gettimeentrieswithinadaterange
 
-
-import dummy_data as gdd
+import numpy as np
 import pandas as pd
 import streamlit as st
 import altair as alt   
 import requests
 import os
 import json 
-from datetime import datetime as dt 
-from datetime import timedelta
+import holidays 
+
+from datetime import datetime as dt, timedelta , timezone 
 
 from dotenv import load_dotenv
 load_dotenv()
 
-click_up_api_key = os.getenv("cu_api_key")
-headers = {"Authorization": click_up_api_key}
 
-team_response = requests.get("https://api.clickup.com/api/v2/team", headers=headers)
-team_data = team_response.json().get("teams")
+def main(): 
+    def user_input():
+        start_date = st.datetime_input(label="Please enter start date", format="YYYY/MM/DD", value=dt(2026, 4, 1, tzinfo=timezone.utc))
+        end_date =  st.datetime_input(label="Please enter end date", format="YYYY/MM/DD", value=dt(2026, 5, 1, tzinfo=timezone.utc) )
+        dates_tuple = start_date, end_date
+        return dates_tuple
+    def fetching_tasks(dates_tuple):
+        start_date = dates_tuple[0]
+        end_date = dates_tuple[1]
+        
+        
+        click_up_api_key = os.getenv("cu_api_key")
+        headers =   {"Authorization": click_up_api_key, 
+                        "accept": "application/json",
+                        "Content-Type": "application/json"}
 
-tasks = []
-task_dict = {}
-user_group_dict = {}
-time_dict = {}
-entry_dict = {}
-master_task_list = []
-entry_list = []
-
-milisecond_converter = 3600000
-unix_converter = 1000
-
-
+        workspace_id = os.getenv("workspace_id")
+        
+        if workspace_id is None:
+            return ("No workspace ID")
+        test_space_id = os.getenv("test_space")
+        
+        get_tasks_json = []
+        date_filtered_entries = []
+        user_teams_json = []
+        tasks_and_entries_tuple = ()
 
 
-#Getting tasks and teams 
-for team in team_data:
-    team_id = team["id"]
-    team_time_data_request = requests.get(f"https://api.clickup.com/api/v2/team/{team_id}/time_entries", headers=headers)
-    time_data =  team_time_data_request.json().get("data")
-    team_ids_for_spaces = requests.get(f"https://api.clickup.com/api/v2/team/{team_id}/space", headers=headers)
-    space_data = team_ids_for_spaces.json().get("spaces")
-    user_group_data = requests.get("https://api.clickup.com/api/v2/group",headers=headers, params = {"team_id":team_id})
-    user_group_data_json = user_group_data.json().get("groups")
-    
-    for user_group in user_group_data_json:
-        for member in user_group["members"]:
-            user_group_dict[member["username"]] = user_group["name"]     
+        us_holidays = holidays.US()
+
+
+        date_differences = end_date - start_date
+        total_work_days = date_differences.days
+        
+        
+        date_differences_delta = range(total_work_days)
+        
+        for day in date_differences_delta:
+            if (start_date + timedelta(days=day)).date().weekday() >= 5 or (start_date + timedelta(days=day)).date() in us_holidays:
+                total_work_days -= 1
+
+        
+        unix_converter = 1000
+        mileseconds_converter = 3600000
+
+        get_user_teams_request = requests.get(f"https://api.clickup.com/api/v2/group?team_id={workspace_id }", headers=headers)
+        if get_user_teams_request.status_code != 200:
+            return (f"User group request API call failed. ERROR CODE: {get_user_teams_request}")    
+        else:
+            user_teams_json = get_user_teams_request.json().get("groups")
+        if user_teams_json == []:
+            return ("No user groups found")
+        # This line will get all of the tasks in your ws, I am just configuring with a test space get_tasks = requests.get(f"https://api.clickup.com/api/v2/team/{workspace_id}/task", headers=headers")
+        get_tasks_request= requests.get(f'https://api.clickup.com/api/v2/team/{workspace_id}/task?space_ids[]={test_space_id}',headers=headers) 
+        
+        if get_tasks_request.status_code != 200:
+            return (f"Task request API call failed. ERROR CODE: { get_tasks_request}")
+        else:
+            get_tasks_json = get_tasks_request.json().get("tasks")
             
-    for space in space_data:
-        space_id = space["id"]    
-        folder_ids_for_lists = requests.get(f"https://api.clickup.com/api/v2/space/{space_id}/folder", headers=headers )
-        folder_data = folder_ids_for_lists.json().get("folders")
-        #Getting folderless lists
-        folderless_lists = requests.get(f"https://api.clickup.com/api/v2/space/{space_id}/list",headers=headers)
-        folderless_lists_data = folderless_lists.json().get("lists")
-        for folder in folder_data:
-            folder_id = folder["id"]            
-            list_ids_for_tasks = requests.get(f"https://api.clickup.com/api/v2/folder/{folder_id}/list", headers=headers)
-            #Combinging data from lists in folders and outside of folders
-            list_data = list_ids_for_tasks.json().get("lists") +  folderless_lists_data
-            for list in list_data:
-                list_id = list["id"]
-                task_ids = requests.get(f"https://api.clickup.com/api/v2/list/{list_id}/task",headers=headers)
-                task_data = task_ids.json().get("tasks")
-                for task in task_data: 
-                    task_id = task["id"]
-                    estimated_time = 0 
-                    actual_time_logged = 0
-                    billable_time_logged = 0 
-                    date_for_task_dict = 0
-                    total_billable_time = 0
-                    total_non_billable_time = 0
-                    username = task.get("user", {}).get("username")
-                    team_member_team = user_group_dict.get(username, "Unknown")
-                            
-                    if task["time_estimate"] != None:
-                        estimated_time = task["time_estimate"]
-                    else:
-                        estimated_time = 0
-                    if task["start_date"] != None:
-                        start_date_to_seconds_for_tasks_no_hours = (int(task["start_date"])/unix_converter)
-                        dt_object_for_tasks_no_hours = dt.fromtimestamp(start_date_to_seconds_for_tasks_no_hours)
-                        start_date_for_task_dict = dt_object_for_tasks_no_hours.date().isoformat() 
-                    else:
-                        start_date_for_task_dict = None
-                    if task["due_date"] != None:
-                        start_date_to_seconds_for_tasks_no_hours = (int(task["due_date"])/unix_converter)
-                        dt_object_for_tasks_no_hours = dt.fromtimestamp(start_date_to_seconds_for_tasks_no_hours)
-                        due_date_for_task_dict = dt_object_for_tasks_no_hours.date().isoformat() 
-                    else:
-                        due_date_for_task_dict = None
-                            
-                    if task["assignees"] == []:
-                        task_dict["Task Assignee"] = "No user assigned"
-                        task_dict["Assignee Id"] = "No user ID"                            
-                    else: 
-                        task_dict["Task Assignee"] = task["assignees"][0]["username"]
-                        task_dict["Assignee Id"] = task["assignees"][0]["id"]
-                    
-                        
-                        task_dict["Task Name"] = task["name"]
-                        task_dict["Task Id"] = task["id"]
-                        task_dict["Start Date"] = start_date_for_task_dict
-                        task_dict["Due Date"] = due_date_for_task_dict
-                        task_dict["Entries"] = []
-                        
-                        billable_time_for_entries = 0
-                        non_billable_time_for_entries = 0
-                        total_time_from_entries = 0 
-                        entry_date = 0
-                            
-                        tasks.append({
-                        "Task Name" : task["name"],
-                        "Task Id" : task["id"],
-                        "Start Date" : start_date_for_task_dict,
-                        "Due Date" : due_date_for_task_dict,
-                        "Time Estimate": estimated_time,
-                        "Assignee" : task_dict["Task Assignee"],
-                        "Assignee Id" : task_dict["Assignee Id"],
-                        "Team": team_member_team,
-                        "Entries" : task_dict["Entries"],
-
-                        })
-
-                        for entry in time_data:                
-                            if entry["task"]["id"] == task["id"]:
-                                entry_date = dt.fromtimestamp(int(entry["at"])/ unix_converter).date().isoformat()    
-                                        
-                                if entry["billable"] == True:
-                                    billable_time_for_entries = int(entry["duration"])
-                                    billable_time_for_entries = billable_time_for_entries / milisecond_converter
-                                elif entry["billable"] == False:
-                                    non_billable_time_for_entries = int(entry["duration"])
-                                    non_billable_time_for_entries = non_billable_time_for_entries / milisecond_converter
-                                        
-                                total_billable_time += billable_time_for_entries
-                                total_non_billable_time += non_billable_time_for_entries
-                                total_time = total_billable_time + total_non_billable_time
-                                
-                                entry_date = dt.fromtimestamp(int(entry["at"])/ unix_converter).date().isoformat()
-                                team_member = entry["user"]["username"]
-                                team_member_id = entry["user"]["id"]
-                        
-
-                                
-                                task_dict["Entries"].append({
-                                    "Task Name": task["name"],
-                                    "Task Id":task["id"], 
-                                    "Assignee" : team_member,
-                                    "Team Member Id" : team_member_id,
-                                    "Team": team_member_team,
-                                    "Date":entry_date, 
-                                    "Billable": billable_time_for_entries,
-                                    "Non-Billable": non_billable_time_for_entries,
-                                    "Total Time": billable_time_for_entries + non_billable_time_for_entries
-
-
-                                    
-                                })
-                                entry_list.append({
-                                    "Task Name": task["name"],
-                                    "Task Id":task["id"], 
-                                    "Assignee" : team_member,
-                                    "Team Member Id" : team_member_id,
-                                    "Team": team_member_team,
-                                    "Date":entry_date, 
-                                    "Billable": billable_time_for_entries,
-                                    "Non-Billable": non_billable_time_for_entries,
-                                    "Total Time": billable_time_for_entries + non_billable_time_for_entries
-
-                                    
-                                })
-                                tasks.append({
-                                    "Billable" : total_billable_time,
-                                    "Non-Billable":total_non_billable_time,
-                                    "Total Time": total_time
-                                })
         
-entries_df = pd.DataFrame(entry_list)
-task_df = pd.DataFrame(tasks)
-
-team_mapping = entries_df[['Task Id', 'Team']].drop_duplicates()
-merged_df = pd.merge(task_df, team_mapping, on='Task Id',how='left' )
-
-print("Current columns in merged_df", merged_df.columns.tolist())
-
-merged_df.drop(columns=["Team_x"])
-
-print("Current columns in merged_df", merged_df.columns.tolist())
-
-
-today = dt.today().date()
-start_of_last_week = today - timedelta( days=(9-today.weekday()))
-end_of_last_week = today + timedelta(days=(6 - today.weekday() - 7))
-
-
-# team_members = merged_df.groupby("Team")["Team Member"].unique()
-#team_members_number = team_members.apply(len)
-# team_estimated_hours_worked = merged_df.groupby('Team')['Time Estimate'].sum()
-# team_actual_hours_worked = entries_df.groupby("Team")["actual_hours"].sum()
-# team_billable_hours = entries_df.groupby("Team")["billable_hours"].sum()
+        start_date_ms = int(start_date.timestamp() * unix_converter)
+        end_date_ms = int(end_date.timestamp() * unix_converter)
         
-#print(team_members)
+        get_entries_from_before_due_and_start_dates = requests.get(f'https://api.clickup.com/api/v2/team/{workspace_id}/time_entries?start_date={start_date_ms}&end_date={end_date_ms}', headers=headers)
+            
 
-# def view_one(): 
-        # team_members = entries_df.groupby("Team")["Assignee"].unique()
-        # team_estimated_hours_worked =  task_df.groupby("Team")["estimated_hours"].sum()
-        # team_actual_hours_worked = entries_df.groupby("Team")["actual_hours"].sum()
-        # team_billable_hours = entries_df.groupby("Team")["billable_hours"].sum()
-        
-        # total_hours = team_members.apply(len) * 40
-        # over_capacity = total_hours < team_actual_hours_worked
-        # over_capacity_percentage = round(((team_actual_hours_worked / total_hours ) * 100) - 100 )
-        # team_register_hours = dummy_data_keys.groupby("Team")["actual_hours"].sum()
-        
-        # days = dummy_data_keys.groupby("Team")["day"].agg(list)
-        
+        date_filtered_entries_json = get_entries_from_before_due_and_start_dates.json().get("data")    
 
-    
-#     col1, col2, col3 = st.columns(3)
-#     col4, col5, col6 = st.columns(3)
-#     col7, col8, col9 = st.columns(3)
-    
-#     with col1:
-#         st.metric(label="Team 1 Total Capacity", value=f"{total_hours['Team One']}")
-#     with col2:
-#         st.metric(label="Team 2 Total Capacity", value=f"{total_hours['Team Two']}")
-#     with col3:
-#         st.metric(label="Team 3 Total Capacity", value=f"{total_hours['Team Three']}")
-#     with col4:
-#         st.metric(label="Team 1 Actual Hours Worked", value=f"{team_actual_hours_worked['Team One']}", delta=f"{over_capacity_percentage['Team One']:+.2f}%")
-#     with col5:
-#         st.metric(label="Team 2 Actual Hours Worked", value=f"{team_actual_hours_worked['Team Two']}", delta=f"{over_capacity_percentage['Team Two']:+.2f}%")
-#     with col6:
-#         st.metric(label="Team 3 Actual Hours Worked", value=f"{team_actual_hours_worked['Team Three']}", delta=f"{over_capacity_percentage['Team Three']:+.2f}%")
-#     with col7:
-#         st.metric(label="Team 1 Billable to Actual", value=f"{(team_billable_hours['Team One'] / team_actual_hours_worked['Team One']):.2f}")
-#     with col8:
-#         st.metric(label="Team 2 Billable to Actual", value=f"{(team_billable_hours['Team Two'] / team_actual_hours_worked['Team Two']):.2f}")
-#     with col9:
-#         st.metric(label="Team 3 Billable to Actual", value=f"{team_billable_hours['Team Three']/ team_actual_hours_worked['Team Three']:.2f}")
-    
-    
-    
-#     hours_worked_by_team_and_day = pd.DataFrame({"Estimated Hours Worked": team_estimated_hours_worked, "Actual Hours Worked": team_actual_hours_worked, "Billable Hours Worked": team_billable_hours, "Overcapacity":over_capacity})
-#     st.title("Team View")
-#     st.dataframe(data= hours_worked_by_team_and_day)
-    
-#     hours_worked_by_team_and_day = pd.DataFrame({ "Estimated Hours Worked": team_estimated_hours_worked, "Actual Hours Worked": team_actual_hours_worked, "Billable Hours Worked": team_billable_hours, "Overcapacity":over_capacity})
-    
-#     days_seperated_for_graph = dummy_data_keys.groupby(["Team", "day"])["actual_hours"].sum().unstack().transpose().reset_index()
-#     st.write("Days to Hours Worked by Team")
-#     st.area_chart(data=days_seperated_for_graph, x="day", y=["Team One", "Team Two", "Team Three"], use_container_width=True) 
-                            
-
+        if get_entries_from_before_due_and_start_dates.status_code != 200:
+            return st.text(f"Date filtered entries request API call failed, ERROR CODE: {get_entries_from_before_due_and_start_dates}")
+        else:
+            date_filtered_entries_json = get_entries_from_before_due_and_start_dates.json().get("data")
+            
+            if date_filtered_entries_json == []:
+                st.text("No entries found for that date range, please re-enter a new date")
+                return "No entries found for that date range, please re-enter a new date"
+            else:
+                tasks_and_entries_tuple = (date_filtered_entries_json , get_tasks_json, user_teams_json, total_work_days)
                 
-
-
+                return tasks_and_entries_tuple
                 
+    def aggregrate_task_data(tasks_and_entries_tuple):
+        unix_converter = 1000
+        mileseconds_converter = 3600000
+        
+        entries_json = tasks_and_entries_tuple [0]
+        tasks_json = tasks_and_entries_tuple[1]
+        user_groups_json = tasks_and_entries_tuple[2]
+        total_work_days = tasks_and_entries_tuple[3]
+        
+        print(user_groups_json)
+        user_groups_df = pd.json_normalize(user_groups_json) 
+        user_groups_df = user_groups_df.explode('members')
+        user_groups_df["team_name"] = user_groups_df['name']
+        user_groups_df["team_member"] = user_groups_df['members'].apply(lambda x: x.get("username") if isinstance(x,dict) and len(x) > 0 else None)
+        user_groups_df["team_member_id"] = user_groups_df['members'].apply(lambda x: x.get("id") if isinstance(x,dict) and len(x) > 0 else None)
+        user_groups_df["team_member_id"] = user_groups_df['team_member_id'].astype('Int64')
+        user_groups_df_filtered = user_groups_df[[
+            'team_name',
+            'team_member',
+            'team_member_id',
+        ]].copy 
+        
+        tasks_df = pd.json_normalize(tasks_json)
+        tasks_df['time_estimate'] = tasks_df['time_estimate'].astype("Int64") / mileseconds_converter
+        tasks_df['time_spent'] = tasks_df['time_spent'].astype("Int64") / mileseconds_converter
+        tasks_df['task_start_date'] = tasks_df['start_date'].apply( lambda x: dt.fromtimestamp(int(x) / unix_converter).date().isoformat() if x is not None and pd.notna(x) else "No date found")
+        tasks_df['task_due_date'] = tasks_df['due_date'].apply( lambda x: dt.fromtimestamp(int(x) / unix_converter).date().isoformat() if x is not None and pd.notna(x) else "No date found")
+        tasks_df["user_id"] = tasks_df['assignees'].apply(lambda x: x[0].get("id") if isinstance(x,list) and len(x) > 0 else None )
+        tasks_df['team_member'] = tasks_df['assignees'].apply(lambda x: x.get('username') if isinstance(x,dict) else None)
+        tasks_df['team_member_id'] = tasks_df['assignees'].apply(lambda x: x.get('id') if isinstance(x,dict) else None)
+        tasks_df['task_id'] = tasks_df['id']
+        tasks_df['task_name'] = tasks_df['name']
+        
+        task_df_filtered = tasks_df[[
+            'task_id',
+            'task_name', 
+            'team_member',
+            'team_member_id',
+            'time_estimate',
+            'time_spent',
+            'task_start_date', 
+            'task_due_date'
+        ]].copy()
 
+
+        entries_df = pd.json_normalize(entries_json)
+        entries_df['duration'] = entries_df['duration'].astype('Int64') / mileseconds_converter 
+        entries_df['entry_date'] = entries_df['start'].apply( lambda x: dt.fromtimestamp(int(x) / unix_converter).date().isoformat() if x is not None else "No date found") # Getting the date for each entry
+        entries_df['non_billable'] = np.where(entries_df['billable'] != True, entries_df['duration'],0)
+        entries_df['billable_hours'] = np.where(entries_df['billable'] == True, entries_df['duration'], 0 )
+        entries_df['actual_hours'] = entries_df[['non_billable', 'billable_hours']].sum(axis=1)
+        entries_df['task_name'] = entries_df['task.name']
+        entries_df['task_id'] = entries_df['task.id']
+        entries_df['team_member'] = entries_df['user.username']
+        entries_df['team_member_id'] = entries_df['user.id'].astype("Int64")
+        
+
+        final_df = entries_df[[
+            'team_member',
+            'team_member_id',
+            'task_name',
+            'task_id',
+            'entry_date',
+            'billable_hours',
+            'non_billable',
+            'actual_hours'
+        ]].copy()
+        
+        
+        final_df = final_df.merge(user_groups_df[["team_name", "team_member_id"]] , on="team_member_id")
+        final_df = final_df.merge(tasks_df[["time_estimate", "task_id"]], on="task_id")
+        final_df = final_df.merge(tasks_df[["task_start_date", "task_id"]], on="task_id")
+        final_df = final_df.merge(tasks_df[["task_due_date", "task_id"]], on="task_id")
+        dates_and_final_df = (final_df , total_work_days)
+        return dates_and_final_df 
+
+    def display_views(dates_and_final_df):
+        final_df = dates_and_final_df[0]
+        total_work_days = dates_and_final_df[1]
+        final_df = final_df.sort_values(by='entry_date')
 
         
 
-#VIEWS WITH DUMMY DATA    
 
-# from dummy_data import generate_dummy_data
+        def view_one():
+            #Team View 
+            work_day_duration = 8
+            rounder = 100 
+            team_members =  final_df.groupby("team_name")["team_member"].unique()
+            team_estimated_hours_worked =  final_df.groupby("team_name")["time_estimate"].sum()
+            team_actual_hours_worked = final_df.groupby("team_name")["actual_hours"].sum()
+            team_billable_hours = final_df.groupby("team_name")["billable_hours"].sum()
+            
+            total_hours = team_members.apply(len) * (total_work_days * work_day_duration) 
+            over_capacity = total_hours < team_actual_hours_worked
+            over_capacity_percentage = round(((team_actual_hours_worked / total_hours ) * rounder) - rounder)
+            team_register_hours = final_df.groupby("team_name")["actual_hours"].sum()
+            
+            
+            teams = final_df["team_name"].unique()
+            cols = st.columns(len(teams))
 
-# dummy_data_keys = gdd.generate_dummy_data()
+            for i, team in enumerate(teams):
+                with cols[i]:
+                    st.metric(label=f"{team} Capacity", value=total_hours[team])
+            for i, team in enumerate(teams):
+                with cols[i]:
+                    st.metric(label=f"{team} Actual Hours Worked", value=team_actual_hours_worked[team], delta=f"{over_capacity_percentage[team]:+.2f}%")
+            for i, team in enumerate(teams):
+                with cols[i]:
+                    st.metric(label=f"{teams}Billable to Actual", value=f"{(team_billable_hours[team] / team_actual_hours_worked[team]):.2f}")    
+        
+            hours_worked_by_team_and_day = pd.DataFrame({"Estimated Hours Worked": team_estimated_hours_worked, "Actual Hours Worked": team_actual_hours_worked, "Billable Hours Worked": team_billable_hours, "Overcapacity":over_capacity})
+            st.title("Team View")
+            st.dataframe(data= hours_worked_by_team_and_day)
+            
+            hours_worked_by_team_and_day = pd.DataFrame({ "Estimated Hours Worked": team_estimated_hours_worked, "Actual Hours Worked": team_actual_hours_worked, "Billable Hours Worked": team_billable_hours, "Overcapacity":over_capacity})
+        
+            days_seperated_for_graph = final_df.groupby(["team_name", "entry_date"])["actual_hours"].sum().unstack().transpose().reset_index()
+            st.write("Days to Hours Worked by Team")
+            st.area_chart(data=days_seperated_for_graph, x='entry_date', y=[team], width='stretch') 
 
-
-# def view_one():
-#     team_members = dummy_data_keys.groupby("Team")["assignee"].unique()
-#     team_members_number = team_members.apply(len)
-#     team_estimated_hours_worked = dummy_data_keys.groupby("Team")["estimated_hours"].sum()
-#     team_actual_hours_worked = dummy_data_keys.groupby("Team")["actual_hours"].sum()
-#     team_billable_hours = dummy_data_keys.groupby("Team")["billable_hours"].sum()
-#     total_hours = team_members_number * 40
-#     over_capacity = total_hours < team_actual_hours_worked
-#     over_capacity_percentage = round(((team_actual_hours_worked / total_hours ) * 100) - 100 )
-#     team_register_hours = dummy_data_keys.groupby("Team")["actual_hours"].sum()
-    
-#     days = dummy_data_keys.groupby("Team")["day"].agg(list)
-    
-
-    
-#     col1, col2, col3 = st.columns(3)
-#     col4, col5, col6 = st.columns(3)
-#     col7, col8, col9 = st.columns(3)
-    
-#     with col1:
-#         st.metric(label="Team 1 Total Capacity", value=f"{total_hours['Team One']}")
-#     with col2:
-#         st.metric(label="Team 2 Total Capacity", value=f"{total_hours['Team Two']}")
-#     with col3:
-#         st.metric(label="Team 3 Total Capacity", value=f"{total_hours['Team Three']}")
-#     with col4:
-#         st.metric(label="Team 1 Actual Hours Worked", value=f"{team_actual_hours_worked['Team One']}", delta=f"{over_capacity_percentage['Team One']:+.2f}%")
-#     with col5:
-#         st.metric(label="Team 2 Actual Hours Worked", value=f"{team_actual_hours_worked['Team Two']}", delta=f"{over_capacity_percentage['Team Two']:+.2f}%")
-#     with col6:
-#         st.metric(label="Team 3 Actual Hours Worked", value=f"{team_actual_hours_worked['Team Three']}", delta=f"{over_capacity_percentage['Team Three']:+.2f}%")
-#     with col7:
-#         st.metric(label="Team 1 Billable to Actual", value=f"{(team_billable_hours['Team One'] / team_actual_hours_worked['Team One']):.2f}")
-#     with col8:
-#         st.metric(label="Team 2 Billable to Actual", value=f"{(team_billable_hours['Team Two'] / team_actual_hours_worked['Team Two']):.2f}")
-#     with col9:
-#         st.metric(label="Team 3 Billable to Actual", value=f"{team_billable_hours['Team Three']/ team_actual_hours_worked['Team Three']:.2f}")
-    
-    
-    
-#     hours_worked_by_team_and_day = pd.DataFrame({"Estimated Hours Worked": team_estimated_hours_worked, "Actual Hours Worked": team_actual_hours_worked, "Billable Hours Worked": team_billable_hours, "Overcapacity":over_capacity})
-#     st.title("Team View")
-#     st.dataframe(data= hours_worked_by_team_and_day)
-    
-#     hours_worked_by_team_and_day = pd.DataFrame({ "Estimated Hours Worked": team_estimated_hours_worked, "Actual Hours Worked": team_actual_hours_worked, "Billable Hours Worked": team_billable_hours, "Overcapacity":over_capacity})
-    
-#     days_seperated_for_graph = dummy_data_keys.groupby(["Team", "day"])["actual_hours"].sum().unstack().transpose().reset_index()
-#     st.write("Days to Hours Worked by Team")
-#     st.area_chart(data=days_seperated_for_graph, x="day", y=["Team One", "Team Two", "Team Three"], use_container_width=True) 
-
-# def view_two():
-#     assignee_estimated_hours_worked = dummy_data_keys.groupby("assignee")["estimated_hours"].sum()
-#     assignee_actual_hours_worked = dummy_data_keys.groupby("assignee")["actual_hours"].sum()
-#     assignee_total_hours_worked = dummy_data_keys.groupby("assignee")["actual_hours"].sum()
-#     capacity_check = assignee_total_hours_worked > 40
-#     assignee_tasks_worked = dummy_data_keys.groupby("assignee")["task"].agg(list)
-#     data_by_assignee = pd.DataFrame({"Tasks": assignee_tasks_worked, "Estimated Hours": assignee_estimated_hours_worked, "Actual Hours Worked": assignee_actual_hours_worked, "Billable Hours Worked":dummy_data_keys.groupby("assignee")['billable_hours'].sum(), "Overcapacity": capacity_check})
-#     st.title("View by Employee")
-#     st.title("Assignee Metrics at a Glance")
-#     col1, col2, col3 = st.columns(3)
-    
-#     with col1:
-#         st.metric(label="Assignee Average Estimated Hours Worked", value=f"{assignee_estimated_hours_worked.mean():.2f}")
-#     with col2:
-#         st.metric(label="Assignee Average Actual Hours Worked", value=f"{assignee_actual_hours_worked.mean():.2f}")
-#     with col3:
-#         st.metric(label="Assignee Average Billable Hours Worked", value=f"{(dummy_data_keys.groupby('assignee')['billable_hours'].sum()).mean():.2f}")   
-    
-#     st.dataframe(data_by_assignee)
-    
-    
-#     chart_data = pd.DataFrame({"Assignee": dummy_data_keys.groupby("assignee").first().index, "Estimated": assignee_estimated_hours_worked, "Actual": assignee_actual_hours_worked, "Billable": dummy_data_keys.groupby("assignee")['billable_hours'].sum()}).reset_index()
-#     st.title("Assignees: Estimated, Actual and Billable Hours")
-#     color_scale = alt.Scale(domain=["Estimated", "Actual", "Billable"], range=["#1f77b4", "#ff7f0e", "#2ca02c"])
-
-#     chart = alt.Chart(chart_data).mark_bar().encode(
-#         x=alt.X("Assignee:N"),
-#         y=alt.Y("value:Q"),
-#         color=alt.Color("variable:N", scale=color_scale),
-#         xOffset="variable:N"
-#     ).transform_fold(["Estimated", "Actual", "Billable"], as_=["variable", "value"])
-#     st.altair_chart(chart, use_container_width=True)
-
-# def view_three():
-    
-#     tasks_for_view_three = dummy_data_keys["task"]
-#     task_ids_for_view_three = dummy_data_keys["task_id"]
-#     task_estimated_hours = dummy_data_keys["estimated_hours"]
-#     task_actual_hours = dummy_data_keys["actual_hours"]
-#     task_assignee = dummy_data_keys["assignee"]
-#     task_to_billable = dummy_data_keys["billable_hours"]
-#     task_cost = task_actual_hours * dummy_data_keys["hourly_rate"]
-#     table_for_view_three = pd.DataFrame({"Tasks": tasks_for_view_three, "Task Id": task_ids_for_view_three, "Assignee":task_assignee, "Estimated Hours": task_estimated_hours, "Actual Hours":task_actual_hours,"Billable":task_to_billable, "Cost":task_cost  }).set_index("Tasks")
-#     table_for_chart_three = pd.DataFrame({"Tasks": tasks_for_view_three, "Task Id": task_ids_for_view_three, "Assignee":task_assignee, "Estimated Hours": task_estimated_hours, "Actual Hours":task_actual_hours,"Billable":task_to_billable, "Cost":task_cost  })
-#     st.title("View by Tasks")
-    
-#     st.title("Task Metrics at a Glance")
-#     col1, col2, col3 = st.columns(3)
-#     with col1:
-#         st.metric(label="Average Estimated Hours per Task", value=f"{task_estimated_hours.mean():.2f}")
-#     with col2:
-#         st.metric(label="Average Actual Hours per Task", value=f"{task_actual_hours.mean():.2f}")
-#     with col3:
-#         st.metric(label="Average Billable Hours per Task", value=f"{task_to_billable.mean():.2f}")
-#     chart = alt.Chart(table_for_chart_three).mark_bar().encode( 
-#         x=alt.X("Tasks:N"),
-#         y=alt.Y("value:Q"),
-#         color=alt.Color("variable:N", scale=alt.Scale(domain=["Estimated Hours", "Actual Hours", "Billable"] , range=["#1f77b4", "#ff7f0e", "#2ca02c"])),
-#         xOffset="variable:N"
-
-#     ).transform_fold(["Estimated Hours", "Actual Hours","Billable"], as_=["variable", "value"])
-#     st.dataframe(table_for_view_three)
-#     st.title("Tasks: Estimated, Actual and Billable Hours")
-#     st.altair_chart(chart, use_container_width=True)
-
-# st.title("ClickUp Time Tracker Dashboard")
-
-# genre = st.radio(
-#     "Which view would you like to see",
-#     ["View One: Team View", "View Two: View by Assignee", "View Three: Project/Task View"],
-#     index=None,
-# )
+        def view_two():
+            #Staff member drill down 
+            team_member_estimated_hours_worked = final_df.groupby("team_member")["time_estimate"].sum()
+            team_member_actual_hours_worked = final_df.groupby("team_member")["actual_hours"].sum()
+            team_member_total_hours_worked = final_df.groupby("team_member")["actual_hours"].sum()
+            capacity_check = team_member_total_hours_worked > (total_work_days * 8)
+            team_member_tasks_worked = final_df.groupby("team_member")["task_name"].agg(list)
+            data_by_team_member = pd.DataFrame({"Tasks": team_member_tasks_worked, "Estimated Hours": team_member_estimated_hours_worked, "Actual Hours Worked": team_member_actual_hours_worked, "Billable Hours Worked":final_df.groupby("team_member")['billable_hours'].sum(), "Overcapacity": capacity_check})
+            st.title("View by Employee")
+            st.title("Team Member Metrics at a Glance")
+            
+            team_members = final_df["team_member"].unique()
+            cols = st.columns(len(team_members))
 
 
-# if genre == None:
-#     st.write("Please select a view")
+            for i, team_member in enumerate(team_members):
+                with cols[i]:
+                    st.metric(label="Team Member Average Estimated Hours Worked", value=f"{team_member_estimated_hours_worked.mean():.2f}")
+            for i, team_member in enumerate(team_members):
+                with cols[i]:
+                    st.metric(label="Team Member Average Actual Hours Worked", value=f"{team_member_actual_hours_worked.mean():.2f}")
+            for i, team_member in enumerate(team_members):
+                with cols[i]:
+                    st.metric(label="Team Member Average Billable Hours Worked", value=f"{(final_df.groupby('team_member')['billable_hours'].sum()).mean():.2f}")   
+            
+            st.dataframe(data_by_team_member , width='stretch')
+            
+            
+            chart_data = pd.DataFrame({"Assignee": final_df.groupby("team_member").first().index, "Estimated": team_member_estimated_hours_worked, "Actual": team_member_actual_hours_worked, "Billable": final_df.groupby("team_member")['billable_hours'].sum()}).reset_index()
+            st.title("Team Memebers: Estimated, Actual and Billable Hours")
+            color_scale = alt.Scale(domain=["Estimated", "Actual", "Billable"], range=["#1f77b4", "#ff7f0e", "#2ca02c"])
+
+            chart = alt.Chart(chart_data).mark_bar().encode(
+                x=alt.X("Assignee:N"),
+                y=alt.Y("value:Q"),
+                color=alt.Color("variable:N", scale=color_scale),
+                xOffset="variable:N"
+            ).transform_fold(["Estimated", "Actual", "Billable"], as_=["variable", "value"])
+            st.altair_chart(chart, width='stretch')
+        def view_three():
+            tasks_for_view_three = final_df["task_name"]
+            task_ids_for_view_three = final_df["task_id"]
+            task_estimated_hours = final_df["time_estimate"]
+            task_actual_hours = final_df["actual_hours"]
+            task_assignee = final_df["team_member"]
+            task_to_billable = final_df["billable_hours"]
+            table_for_view_three = pd.DataFrame({"Tasks": tasks_for_view_three, "Task Id": task_ids_for_view_three, "Assignee":task_assignee, "Estimated Hours": task_estimated_hours, "Actual Hours":task_actual_hours,"Billable":task_to_billable, }).set_index("Tasks")
+            table_for_chart_three = pd.DataFrame({"Tasks": tasks_for_view_three, "Task Id": task_ids_for_view_three, "Assignee":task_assignee, "Estimated Hours": task_estimated_hours, "Actual Hours":task_actual_hours,"Billable":task_to_billable, })
+            st.title("View by Tasks")
+        
+            st.title("Task Metrics at a Glance")
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                    st.metric(label="Average Estimated Hours per Task", value=f"{task_estimated_hours.mean():.2f}")
+            with col2:
+                    st.metric(label="Average Actual Hours per Task", value=f"{task_actual_hours.mean():.2f}")
+            with col3:
+                    st.metric(label="Average Billable Hours per Task", value=f"{task_to_billable.mean():.2f}")
+            chart = alt.Chart(table_for_chart_three).mark_bar().encode( 
+                    x=alt.X("Tasks:N"),
+                    y=alt.Y("value:Q"),
+                    color=alt.Color("variable:N", scale=alt.Scale(domain=["Estimated Hours", "Actual Hours", "Billable"] , range=["#1f77b4", "#ff7f0e", "#2ca02c"])),
+                    xOffset="variable:N").transform_fold(["Estimated Hours", "Actual Hours","Billable"], as_=["variable", "value"])
+            st.dataframe(table_for_view_three)
+            st.title("Tasks: Estimated, Actual and Billable Hours")
+            st.altair_chart(chart, use_container_width=True)
+        
+        # user_input = ""
+        # user_input = st.text_input(label="Please input date: Year, Month, Day")
 
 
-# elif genre == "View One: Team View":
-#     view_one() 
+        genre = st.radio(
+        "Which view would you like to see",
+        ["View One: Team View", "View Two: View by Assignee", "View Three: Project/Task View"],
+        index=None,
+    )
 
-# elif genre == "View Two: View by Assignee":
-#     view_two() 
 
-# elif genre == "View Three: Project/Task View":
-#     view_three()
-# else: 
-#     st.write("You selected:", genre)
+        if genre == None:
+            st.write("Please select a view")
+
+
+        elif genre == "View One: Team View":
+            view_one() 
+
+        elif genre == "View Two: View by Assignee":
+            view_two() 
+
+        elif genre == "View Three: Project/Task View":
+            view_three()
+        else: 
+            st.write("You selected:", genre)
+        
+
+    display_views(aggregrate_task_data(fetching_tasks(user_input())))
+main()
