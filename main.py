@@ -30,7 +30,7 @@ def main():
                         "accept": "application/json",
                         "Content-Type": "application/json"}
 
-        workspace_id = os.getenv("workspace_id")
+        workspace_id = os.getenv("workspace_id") #This will cause the API to only pull from one workspace
         
         if workspace_id is None:
             return ("No workspace ID")
@@ -105,7 +105,6 @@ def main():
         user_groups_json = tasks_and_entries_tuple[2]
         total_work_days = tasks_and_entries_tuple[3]
         
-        print(user_groups_json)
         user_groups_df = pd.json_normalize(user_groups_json) 
         user_groups_df = user_groups_df.explode('members')
         user_groups_df["team_name"] = user_groups_df['name']
@@ -206,7 +205,7 @@ def main():
                     st.metric(label=f"{team} Actual Hours Worked", value=team_actual_hours_worked[team], delta=f"{over_capacity_percentage[team]:+.2f}%")
             for i, team in enumerate(teams):
                 with cols[i]:
-                    st.metric(label=f"{teams}Billable to Actual", value=f"{(team_billable_hours[team] / team_actual_hours_worked[team]):.2f}")    
+                    st.metric(label=f"{team} Billable to Actual", value=f"{(team_actual_hours_worked[team] / team_billable_hours[team] ):.2f}")    
         
             hours_worked_by_team_and_day = pd.DataFrame({"Estimated Hours Worked": team_estimated_hours_worked, "Actual Hours Worked": team_actual_hours_worked, "Billable Hours Worked": team_billable_hours, "Overcapacity":over_capacity})
             st.title("Team View")
