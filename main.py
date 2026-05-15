@@ -16,6 +16,7 @@ load_dotenv()
 
 def main(): 
     def user_input():
+        st.markdown("<h1 style='text-align: center;'>ClickUp Time Tracker</h1>", unsafe_allow_html=True)
         start_date = st.datetime_input(label="Please enter start date", format="YYYY/MM/DD", value=dt(2026, 4, 1, tzinfo=timezone.utc))
         end_date =  st.datetime_input(label="Please enter end date", format="YYYY/MM/DD", value=dt(2026, 5, 1, tzinfo=timezone.utc) )
         dates_tuple = start_date, end_date
@@ -199,7 +200,7 @@ def main():
 
             for i, team in enumerate(teams):
                 with cols[i]:
-                    st.metric(label=f"{team} Capacity", value=total_hours[team])
+                    st.metric(label=f"{team} Total Workable Hours", value=total_hours[team])
             for i, team in enumerate(teams):
                 with cols[i]:
                     st.metric(label=f"{team} Actual Hours Worked", value=team_actual_hours_worked[team], delta=f"{over_capacity_percentage[team]:+.2f}%")
@@ -283,9 +284,7 @@ def main():
             st.dataframe(table_for_view_three)
             st.title("Tasks: Estimated, Actual and Billable Hours")
             st.altair_chart(chart, use_container_width=True)
-        
-        # user_input = ""
-        # user_input = st.text_input(label="Please input date: Year, Month, Day")
+
 
 
         genre = st.radio(
@@ -293,7 +292,6 @@ def main():
         ["View One: Team View", "View Two: View by Assignee", "View Three: Project/Task View"],
         index=None,
     )
-
 
         if genre == None:
             st.write("Please select a view")
@@ -312,4 +310,5 @@ def main():
         
 
     display_views(aggregrate_task_data(fetching_tasks(user_input())))
-main()
+if __name__ == "__main__":
+    main()
