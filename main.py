@@ -17,8 +17,10 @@ load_dotenv()
 def main(): 
     def user_input():
         st.markdown("<h1 style='text-align: center;'>ClickUp Time Tracker</h1>", unsafe_allow_html=True)
-        start_date = st.datetime_input(label="Please enter start date", format="YYYY/MM/DD", value=dt(2026, 4, 1, tzinfo=timezone.utc))
-        end_date =  st.datetime_input(label="Please enter end date", format="YYYY/MM/DD", value=dt(2026, 5, 1, tzinfo=timezone.utc) )
+        #start_date = st.datetime_input(label="Please enter start date", format="YYYY/MM/DD", value=dt(2026, 4, 1, tzinfo=timezone.utc))
+        #end_date =  st.datetime_input(label="Please enter end date", format="YYYY/MM/DD", value=dt(2026, 5, 1, tzinfo=timezone.utc) )
+        start_date = dt(2026, 4, 1, tzinfo=timezone.utc)
+        end_date = dt(2026, 5, 1, tzinfo=timezone.utc)         
         dates_tuple = start_date, end_date
         return dates_tuple
     def fetching_tasks(dates_tuple):
@@ -151,11 +153,11 @@ def main():
         entries_df['task_id'] = entries_df['task.id']
         entries_df['team_member'] = entries_df['user.username']
         entries_df['team_member_id'] = entries_df['user.id'].astype("Int64")
-        
 
         final_df = entries_df[[
             'team_member',
             'team_member_id',
+            'team_name'
             'task_name',
             'task_id',
             'entry_date',
@@ -187,6 +189,7 @@ def main():
             team_members =  final_df.groupby("team_name")["team_member"].unique()
             team_estimated_hours_worked =  final_df.groupby("team_name")["time_estimate"].sum()
             team_actual_hours_worked = final_df.groupby("team_name")["actual_hours"].sum()
+            print(team_actual_hours_worked)
             team_billable_hours = final_df.groupby("team_name")["billable_hours"].sum()
             
             total_hours = team_members.apply(len) * (total_work_days * work_day_duration) 
