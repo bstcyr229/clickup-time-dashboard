@@ -14,16 +14,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def main(): 
-    def user_input():
-        st.markdown("<h1 style='text-align: center;'>ClickUp Time Tracker</h1>", unsafe_allow_html=True)
-        #start_date = st.datetime_input(label="Please enter start date", format="YYYY/MM/DD", value=dt(2026, 4, 1, tzinfo=timezone.utc))
-        #end_date =  st.datetime_input(label="Please enter end date", format="YYYY/MM/DD", value=dt(2026, 5, 1, tzinfo=timezone.utc) )
-        start_date = dt(2026, 4, 1, tzinfo=timezone.utc)
-        end_date = dt(2026, 5, 1, tzinfo=timezone.utc)         
+
+def user_input():
+        start_date = st.datetime_input(label="Please enter start date", format="YYYY/MM/DD", value=dt(2026, 4, 1, tzinfo=timezone.utc))
+        end_date =  st.datetime_input(label="Please enter end date", format="YYYY/MM/DD", value=dt(2026, 5, 1, tzinfo=timezone.utc) )
         dates_tuple = start_date, end_date
         return dates_tuple
-    def fetching_tasks(dates_tuple):
+def fetching_tasks(dates_tuple):
         start_date = dates_tuple[0]
         end_date = dates_tuple[1]
         
@@ -67,15 +64,21 @@ def main():
             return (f"User group request API call failed. ERROR CODE: {get_user_teams_request}")    
         else:
             user_teams_json = get_user_teams_request.json().get("groups")
+            
         if user_teams_json == []:
+            st.text("No user groups found")
             return ("No user groups found")
-        # This line will get all of the tasks in your ws, I am just configuring with a test space get_tasks = requests.get(f"https://api.clickup.com/api/v2/team/{workspace_id}/task", headers=headers")
+        # This endpoint will get all of the tasks in your ws, I am just configuring with a test space get_tasks = requests.get(f"https://api.clickup.com/api/v2/team/{workspace_id}/task", headers=headers")
         get_tasks_request= requests.get(f'https://api.clickup.com/api/v2/team/{workspace_id}/task?space_ids[]={test_space_id}',headers=headers) 
         
         if get_tasks_request.status_code != 200:
             return (f"Task request API call failed. ERROR CODE: { get_tasks_request}")
         else:
             get_tasks_json = get_tasks_request.json().get("tasks")
+            
+            if get_tasks_json == []:
+                st.text("No tasks found")
+                return("No tasks found")
             
         
         start_date_ms = int(start_date.timestamp() * unix_converter)
@@ -96,10 +99,9 @@ def main():
                 return "No entries found for that date range, please re-enter a new date"
             else:
                 tasks_and_entries_tuple = (date_filtered_entries_json , get_tasks_json, user_teams_json, total_work_days)
-                
                 return tasks_and_entries_tuple
                 
-    def aggregrate_task_data(tasks_and_entries_tuple):
+def aggregrate_task_data(tasks_and_entries_tuple):
         unix_converter = 1000
         mileseconds_converter = 3600000
         
@@ -153,11 +155,11 @@ def main():
         entries_df['task_id'] = entries_df['task.id']
         entries_df['team_member'] = entries_df['user.username']
         entries_df['team_member_id'] = entries_df['user.id'].astype("Int64")
+        
 
         final_df = entries_df[[
             'team_member',
             'team_member_id',
-            'team_name'
             'task_name',
             'task_id',
             'entry_date',
@@ -174,7 +176,7 @@ def main():
         dates_and_final_df = (final_df , total_work_days)
         return dates_and_final_df 
 
-    def display_views(dates_and_final_df):
+def display_views(dates_and_final_df):
         final_df = dates_and_final_df[0]
         total_work_days = dates_and_final_df[1]
         final_df = final_df.sort_values(by='entry_date')
@@ -189,7 +191,6 @@ def main():
             team_members =  final_df.groupby("team_name")["team_member"].unique()
             team_estimated_hours_worked =  final_df.groupby("team_name")["time_estimate"].sum()
             team_actual_hours_worked = final_df.groupby("team_name")["actual_hours"].sum()
-            print(team_actual_hours_worked)
             team_billable_hours = final_df.groupby("team_name")["billable_hours"].sum()
             
             total_hours = team_members.apply(len) * (total_work_days * work_day_duration) 
@@ -203,7 +204,7 @@ def main():
 
             for i, team in enumerate(teams):
                 with cols[i]:
-                    st.metric(label=f"{team} Total Workable Hours", value=total_hours[team])
+                    st.metric(label=f"{team} Capacity", value=total_hours[team])
             for i, team in enumerate(teams):
                 with cols[i]:
                     st.metric(label=f"{team} Actual Hours Worked", value=team_actual_hours_worked[team], delta=f"{over_capacity_percentage[team]:+.2f}%")
@@ -287,7 +288,9 @@ def main():
             st.dataframe(table_for_view_three)
             st.title("Tasks: Estimated, Actual and Billable Hours")
             st.altair_chart(chart, use_container_width=True)
-
+        
+        # user_input = ""
+        # user_input = st.text_input(label="Please input date: Year, Month, Day")
 
 
         genre = st.radio(
@@ -295,6 +298,7 @@ def main():
         ["View One: Team View", "View Two: View by Assignee", "View Three: Project/Task View"],
         index=None,
     )
+
 
         if genre == None:
             st.write("Please select a view")
@@ -311,7 +315,5 @@ def main():
         else: 
             st.write("You selected:", genre)
         
-
-    display_views(aggregrate_task_data(fetching_tasks(user_input())))
-if __name__ == "__main__":
-    main()
+#aggregrate_task_data(fetching_tasks(user_input()))
+display_views(aggregrate_task_data(fetching_tasks(user_input())))
