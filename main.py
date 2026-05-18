@@ -116,7 +116,6 @@ def aggregrate_task_data(tasks_and_entries_tuple):
         user_groups_df["team_member"] = user_groups_df['members'].apply(lambda x: x.get("username") if isinstance(x,dict) and len(x) > 0 else None)
         user_groups_df["team_member_id"] = user_groups_df['members'].apply(lambda x: x.get("id") if isinstance(x,dict) and len(x) > 0 else None)
         user_groups_df["team_member_id"] = user_groups_df['team_member_id'].astype('Int64')
-        user_groups_df = user_groups_df[~user_groups_df.duplicated(subset="team_name", keep="first")]
         user_groups_df_filtered = user_groups_df[[
             'team_name',
             'team_member',
@@ -180,7 +179,6 @@ def aggregrate_task_data(tasks_and_entries_tuple):
 def display_views(dates_and_final_df):
         final_df = dates_and_final_df[0]
         total_work_days = dates_and_final_df[1]
-        print(f"FINAL DF {final_df}")
         final_df = final_df.sort_values(by='entry_date')
         
 
